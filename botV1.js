@@ -64,10 +64,10 @@ bot.on('message', (message) =>{
 					message.channel.send("This command will allow you the get a build for any weapon in our database");
 					message.channel.send("!get [weapon_name[]] weapon name must be one word so replace and space with a \\_, you can also request as many weapons as you desire by adding the next weapon to the end !get [weapon1] [weapon2]");
 					break;
-				case "delete": 
+				/*case "delete": 
 					message.channel.send("This command will allow those with the permission, to delete a build from the bot for a reason");
 					message.channel.send("!delete [weapon\\_name] [number], weapon\\_name needs to be one word so replace any spaces with a \\_, and number is the number by the build when using the !get command");
-				case "edit":
+			*/	case "edit":
 					message.channel.send("This command will allow those with the permission, to edit the description of a weapon for a specific build");
 					message.channel.send("!edit [weapon\\_name] [number] [description], see !add for information on [weapon\\_name] and [description], [number] is the number found by the build you want to edit");
 				case "list":
@@ -85,7 +85,7 @@ bot.on('message', (message) =>{
 					break;
 				default: 
 					message.channel.send("There are numerous commands that can be used, typing !help [command] will give you more info on that command");
-					message.channel.send("Commands: ping, role, roll, add, get, delete, edit, list, request, get_request, clear\\_request")
+					message.channel.send("Commands: ping, role, roll, add, get, edit, list, request, get_request, clear\\_request")
 					break;
 			}
 			break;
@@ -149,25 +149,39 @@ bot.on('message', (message) =>{
 			}
 			var description = "";
 			for(var i = 2; i < args.length; i++){
-				description += args[i];
+				description += args[i] + " ";
 			}
 			weaponList[args[0]][(args[1]-1)].Descrip = description;
 			writeFile(weaponList,message);
-			break;
+			break;/*
 		case "delete":
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
-			weaponList[args[0]].splice((args[1]-1),1);
+			if (args[1] == 1 && !(weaponList[args[0]][1])){
+				console.log(weaponList.delete(args[0]));
+			}else if(!args[1]){
+				console.log(weaponList.delete(args[0]));
+			}else{
+				weaponList[args[0]].splice((args[1]-1),1);
+			}
+			if(!weaponList[args[0]])
+			{
+				delete weaponList[args[0]];
+				console.log(weaponList.has(args[0]));
+			}
+			if(weaponList.has(args[0])){
+				console.log("Exists");
+			}
 			writeFile(weaponList,message);
-			break;
+			break;*/
 		case "get":
 			for (var j = 0; j < args.length; j++){
 				if (weaponList[args[j]]){
 					message.channel.send(args[j]);
 					for(var i = 0; i < weaponList[args[j]].length; i++){
-						message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\n" + weaponList[args[j]][i].Link);
+						message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + " Burst DPS: " + weaponList[args[j]][i].Burst + "\n" + weaponList[args[j]][i].Link);
 					}
 				} else {
 					message.reply(args[j] + " does not have a build yet, make sure it is spelled correctly before requesting a build");
