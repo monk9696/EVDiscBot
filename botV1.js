@@ -29,6 +29,8 @@ bot.on('message', (message) =>{
 	//checks the role for a moderator status
 	if(message.member.roles.some(r=>config.botRole.includes(r.name)))	{
 		role = true;
+	}else{
+		role = false;
 	}
 	var litteral = message.content;
 	//ignores all non commands
