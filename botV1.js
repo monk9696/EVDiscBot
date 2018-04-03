@@ -149,6 +149,11 @@ bot.on('message', (message) =>{
 				message.channel.send("You are missing parameters, please see !help for information")
 				break;
 			}
+			if(!weaponList[args[0]]){
+				message.reply(args[0] + " does not exist in the database");
+				break;
+			}
+
 			var description = "";
 			for(var i = 2; i < args.length; i++){
 				description += args[i] + " ";
