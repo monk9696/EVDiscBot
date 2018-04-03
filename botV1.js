@@ -60,7 +60,7 @@ bot.on('message', (message) =>{
 				case "add":
 					message.channel.send("This command will allow people with the proper role to add a build to the list of avilable builds");
 					message.channel.send("!add [weapon\\_name] [link] [Sustained\\_dps] [Burst\\_dps] [description[]], weapon\\_name needs to be one word so replace any spaces with a \\_");
-					message.channel.send("Sustained and Burst are the deps Calculations for each, Description is the description for the build may be multiple words")
+					message.channel.send("Sustained and Burst are the dps Calculations for each, Description is the description for the build may be multiple words")
 					break;
 				case "get":
 					message.channel.send("This command will allow you the get a build for any weapon in our database");
