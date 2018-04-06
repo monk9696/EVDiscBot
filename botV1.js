@@ -109,18 +109,20 @@ bot.on('message', (message) =>{
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
-			if(args.length < 5){
-			message.reply("You need to include the weapon name, link to the build, Sustained and Burst DPS numbers, and a description");
+			if(args.length < 7){
+			message.reply("You need to include the weapon name, link to the build, Sustained and Burst DPS numbers, the weapons MR, and the Status chance and a description");
 				break;
 			}
 			var descrip = "";
-			for(var r = 4; r < args.length; r++){
+			for(var r = 6; r < args.length; r++){
 				descrip = descrip + args[r] + " ";
 			}
 			var stuff = {
 				Link: args[1],
 				Sustained: args[2],
 				Burst: args[3],
+				MR: args[4],
+				Status: args[5],
 				Descrip: descrip
 			};
 			if(weaponList[args[0]]){
@@ -187,9 +189,9 @@ bot.on('message', (message) =>{
 		case "get":
 			for (var j = 0; j < args.length; j++){
 				if (weaponList[args[j]]){
-					message.channel.send(args[j]);
+					message.channel.send(args[j] + ": Required MR: " + weaponList[args[j]][0].MR);
 					for(var i = 0; i < weaponList[args[j]].length; i++){
-						message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + " Burst DPS: " + weaponList[args[j]][i].Burst + "\n" + weaponList[args[j]][i].Link);
+						message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + ", Burst DPS: " + weaponList[args[j]][i].Burst + ", Status Chance: " + weaponList[args[j]][i].Status + "\n" + weaponList[args[j]][i].Link);
 					}
 				} else {
 					message.reply(args[j] + " does not have a build yet, make sure it is spelled correctly before requesting a build");
