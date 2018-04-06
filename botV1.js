@@ -59,7 +59,7 @@ bot.on('message', (message) =>{
 					break;
 				case "add":
 					message.channel.send("This command will allow people with the proper role to add a build to the list of avilable builds");
-					message.channel.send("!add [weapon\\_name] [link] [Sustained\\_dps] [Burst\\_dps] [description[]], weapon\\_name needs to be one word so replace any spaces with a \\_");
+					message.channel.send("!add [weapon\\_name] [link] [Sustained\\_dps] [Burst\\_dps] [MR] [Status\\_Chance] [description[]], weapon\\_name needs to be one word so replace any spaces with a \\_");
 					message.channel.send("Sustained and Burst are the dps Calculations for each, Description is the description for the build may be multiple words")
 					break;
 				case "get":
@@ -272,7 +272,7 @@ function readJSONFile(list)
 				Link: weapCheck[1],
 				Sustained: weapCheck[2],
 				Burst: weapCheck[3],
-				MR: weapCheck[4].
+				MR: weapCheck[4],
 				Status: weapCheck[5],
 				Descrip: weapCheck[6]
 			};
