@@ -272,9 +272,11 @@ function readJSONFile(list)
 				Link: weapCheck[1],
 				Sustained: weapCheck[2],
 				Burst: weapCheck[3],
-				Descrip: weapCheck[4]
+				MR: weapCheck[4].
+				Status: weapCheck[5],
+				Descrip: weapCheck[6]
 			};
-			for(var j = 5; j < weapCheck.length; j++){
+			for(var j = 7; j < weapCheck.length; j++){
 				weapAdd.Descrip =  weapAdd.Descrip + " " + weapCheck[j];
 			}
 			if (!list[weapCheck[0]]){
