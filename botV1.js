@@ -72,6 +72,7 @@ bot.on('message', (message) =>{
 			*/	case "edit":
 					message.channel.send("This command will allow those with the permission, to edit the description of a weapon for a specific build");
 					message.channel.send("!edit [weapon\\_name] [number] [description], see !add for information on [weapon\\_name] and [description], [number] is the number found by the build you want to edit");
+					break;
 				case "list":
 					message.channel.send("This command will list all of the different weapons stored in the database");
 					break;
