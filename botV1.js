@@ -163,32 +163,27 @@ bot.on('message', (message) =>{
 			}
 			weaponList[args[0]][(args[1]-1)].Descrip = description;
 			writeFile(weaponList,message);
-			break;/*
+			break;
 		case "delete":
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
-			if (args[1] == 1 && !(weaponList[args[0]][1])){
-				console.log(weaponList.delete(args[0]));
-			}else if(!args[1]){
-				console.log(weaponList.delete(args[0]));
-			}else{
-				weaponList[args[0]].splice((args[1]-1),1);
-			}
-			if(!weaponList[args[0]])
-			{
-				delete weaponList[args[0]];
-				console.log(weaponList.has(args[0]));
-			}
-			if(weaponList.has(args[0])){
-				console.log("Exists");
+			if (weaponList[args[0]] && weaponList[args[0]].length >= args[1]){
+				if (weaponList[args[0]].length > 1){
+					weaponList[args[0]] = weaponList[args[0]].splice((args[1]-1),1);
+				} else {
+					delete weaponList[args[0]];
+					weaponList.delete(args[0]);
+				}
+			} else {
+				message.reply("Either the weapon does not exist or does not have " + args[1] + " builds");
 			}
 			writeFile(weaponList,message);
-			break;*/
+			break;
 		case "get":
 			for (var j = 0; j < args.length; j++){
-				if (weaponList[args[j]]){
+				if (weaponList[args[j]][0]){
 					message.channel.send(args[j] + ": Required MR: " + weaponList[args[j]][0].MR);
 					for(var i = 0; i < weaponList[args[j]].length; i++){
 						message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + ", Burst DPS: " + weaponList[args[j]][i].Burst + ", Status Chance: " + weaponList[args[j]][i].Status + "\n" + weaponList[args[j]][i].Link);
@@ -241,8 +236,10 @@ function writeFile(list,message)
 	stream.once('open', () => {
 		var outputKeys = Object.keys(list);
 		for(var key of outputKeys){
-			for(var i = 0; i < list[key].length; i++){
-				stream.write(key + " " + list[key][i].Link + " " + list[key][i].Sustained + " " + list[key][i].Burst + " " + list[key][i].Descrip + '¯\\_(ツ)_/¯\n');
+			if (list[key][0]){
+				for(var i = 0; i < list[key].length; i++){
+					stream.write(key + " " + list[key][i].Link + " " + list[key][i].Sustained + " " + list[key][i].Burst + " " + list[key][i].MR + " " + list[key][i].Status + " " + list[key][i].Descrip + '¯\\_(ツ)_/¯\n');
+				}
 			}
 		}
 		stream.end();
