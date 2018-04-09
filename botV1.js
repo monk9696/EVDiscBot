@@ -136,7 +136,7 @@ bot.on('message', (message) =>{
 			break;
 		case "list":
 			var list = Object.keys(weaponList);
-			if(list){
+			if(list.length >= 1){
 				message.channel.send(list);
 			} else {
 				message.reply("No stored Weapons");
@@ -171,7 +171,7 @@ bot.on('message', (message) =>{
 			}
 			if (weaponList[args[0]] && weaponList[args[0]].length >= args[1]){
 				if (weaponList[args[0]].length > 1){
-					weaponList[args[0]] = weaponList[args[0]].splice((args[1]-1),1);
+					weaponList[args[0]] = weaponList[args[0]].splice((args[1]-2),1);
 				} else {
 					delete weaponList[args[0]];
 					weaponList.delete(args[0]);
@@ -182,15 +182,23 @@ bot.on('message', (message) =>{
 			writeFile(weaponList,message);
 			break;
 		case "get":
-			for (var j = 0; j < args.length; j++){
-				if (weaponList[args[j]][0]){
-					message.channel.send(args[j] + ": Required MR: " + weaponList[args[j]][0].MR);
-					for(var i = 0; i < weaponList[args[j]].length; i++){
-						message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + ", Burst DPS: " + weaponList[args[j]][i].Burst + ", Status Chance: " + weaponList[args[j]][i].Status + "\n" + weaponList[args[j]][i].Link);
+			if (args[0]){
+				for (var j = 0; j < args.length; j++){
+					if (weaponList[args[j]]){
+						if (weaponList[args[j]][0]){
+							message.channel.send(args[j] + ": Required MR: " + weaponList[args[j]][0].MR);
+							for(var i = 0; i < weaponList[args[j]].length; i++){
+								message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + ", Burst DPS: " + weaponList[args[j]][i].Burst + ", Status Chance: " + weaponList[args[j]][i].Status + "\n" + weaponList[args[j]][i].Link);
+							}
+						} else {
+							message.reply(args[j] + " does not have a build yet, make sure it is spelled correctly before requesting a build ERROR: Deleted");
+						}
+					} else {
+						message.reply(args[j] + " does not have a build yet, make sure it is spelled correctly before requesting a build");
 					}
-				} else {
-					message.reply(args[j] + " does not have a build yet, make sure it is spelled correctly before requesting a build");
 				}
+			} else {
+				message.reply("You must list some weapon for this command"); 
 			}
 			message.channel.send("Done");
 			break;
