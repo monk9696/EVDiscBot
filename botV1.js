@@ -89,7 +89,7 @@ bot.on('message', (message) =>{
 					break;
 				default: 
 					message.channel.send("There are numerous commands that can be used, typing !help [command] will give you more info on that command");
-					message.channel.send("Commands: ping, role, roll, add, get, edit, list, request, get_request, clear\\_request")
+					message.channel.send("Commands: ping, role, roll, add, get, edit, delete, list, request, get_request, clear\\_request")
 					break;
 			}
 			break;
