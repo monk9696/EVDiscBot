@@ -66,10 +66,11 @@ bot.on('message', (message) =>{
 					message.channel.send("This command will allow you the get a build for any weapon in our database");
 					message.channel.send("!get [weapon_name[]] weapon name must be one word so replace and space with a \\_, you can also request as many weapons as you desire by adding the next weapon to the end !get [weapon1] [weapon2]");
 					break;
-				/*case "delete": 
+				case "delete": 
 					message.channel.send("This command will allow those with the permission, to delete a build from the bot for a reason");
 					message.channel.send("!delete [weapon\\_name] [number], weapon\\_name needs to be one word so replace any spaces with a \\_, and number is the number by the build when using the !get command");
-			*/	case "edit":
+					break;
+				case "edit":
 					message.channel.send("This command will allow those with the permission, to edit the description of a weapon for a specific build");
 					message.channel.send("!edit [weapon\\_name] [number] [description], see !add for information on [weapon\\_name] and [description], [number] is the number found by the build you want to edit");
 					break;
