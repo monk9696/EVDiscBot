@@ -68,8 +68,9 @@ bot.on('message', (message) =>{
 					message.channel.send("!get [weapon_name[]] weapon name must be one word so replace and space with a \\_, you can also request as many weapons as you desire by adding the next weapon to the end !get [weapon1] [weapon2]");
 					break;
 				case "delete": 
-					message.channel.send("This command will allow those with the permission, to delete a build from the bot for a reason");
+					message.channel.send("This command will allow those with the permission, to delete a build/weapon from the bot for a reason");
 					message.channel.send("!delete [weapon\\_name] [number], weapon\\_name needs to be one word so replace any spaces with a \\_, and number is the number by the build when using the !get command");
+					message.channel.send("If you want to just delete the weapon, juet ignore the number stipulation")
 					break;
 				case "edit":
 					message.channel.send("This command will allow those with the permission, to edit the description of a weapon for a specific build");
@@ -80,13 +81,14 @@ bot.on('message', (message) =>{
 					break;
 				case "request":
 					message.channel.send("This command will allow you to request builds for a weapon that does not exist in the database");
-					message.channel.send("!request [weapon_name] where the weapon name is one word so replace the space with a \\_");
+					message.channel.send("!request [weapon_name[]] where the weapon\\_name[] is one word per weapon so replace the space with a \\_ numerous weapons can be requested at one time.");
 					break;
 				case "get_request":
 					message.channel.send("This command will respond with a list of the requested weapons");
 					break;
 				case "clear_request":
-					message.channel.send("This command will clear the list for requested weapons once they are resolved, the use of this command is restricted to those with a specific role");
+					message.channel.send("This command will clear the list or weapons for requested weapons once they are resolved, the use of this command is restricted to those with a specific role");
+					message.channel.send("!clear_request [weapon[]] where weapon[] is a list of the weapons to remove from the list of requested weapons.");					
 					break;
 				default: 
 					message.channel.send("There are numerous commands that can be used, typing !help [command] will give you more info on that command");
@@ -141,9 +143,13 @@ bot.on('message', (message) =>{
 			if(list.length >= 1){
 				var out = "";
 				for(var name of list){
-					out += name + " ";
+					out += name + ", ";
+					if(out.length >= 1500){
+						message.channel.send(out);
+						out = "";
+					}
 				}
-				message.channel.send(list);
+				message.channel.send(out);
 			} else {
 				message.reply("No stored Weapons");
 			}
@@ -236,9 +242,16 @@ bot.on('message', (message) =>{
 			}
 			var out = "";
 			for(var name of neededWeapons){
-				out += name + "\n";
+				out += name + ", ";
+				console.log(out.length);
+				if(out.length >= 1500){
+					message.channel.send(out);
+					out = "";
+				}
 			}
-			message.channel.send(out);
+			if(out !== ""){
+				message.channel.send(out);
+			}
 			break;
 		case "clear_request":
 			if(!role){
