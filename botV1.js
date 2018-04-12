@@ -175,7 +175,13 @@ bot.on('message', (message) =>{
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
-			if (weaponList[args[0]] && weaponList[args[0]].length >= args[1]){
+			if (args[1] == undefined){
+				if (weaponList[args[0]]){
+					message.channel.send(args[0] + " deleted");
+					delete weaponList[args[0]];
+					weaponList.delete(args[0]);
+				}
+			} else if (weaponList[args[0]] && weaponList[args[0]].length >= args[1]){
 				if (weaponList[args[0]].length > 1){
 					weaponList[args[0]] = weaponList[args[0]].splice((args[1]-2),1);
 				} else {
