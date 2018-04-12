@@ -3,17 +3,18 @@ const Discord = require('discord.js');
 //Config speciffic constants
 const config = require("./auth.json");
 //filesystem
-const fs = require('fs');
+const fs = require("./filewrite.js");;
 //Instantiates the bot
 const bot = new Discord.Client();
 
+const file = new fs();
 var neededWeapons = [];
 var weaponList = new Map();
 var role = false;
 
 bot.on("ready", () => {
 	bot.user.setActivity("life");
-	readJSONFile(weaponList);
+	file.readFile(weaponList, neededWeapons);
 });
 
 
@@ -133,7 +134,7 @@ bot.on('message', (message) =>{
 				weaponList[args[0]].push(stuff);
 			}
 			message.channel.send(args[0] + " added to the list");
-			writeFile(weaponList,message);
+			file.writeWeapFile(weaponList,message);
 			break;
 		case "list":
 			var list = Object.keys(weaponList);
@@ -163,7 +164,7 @@ bot.on('message', (message) =>{
 				description += args[i] + " ";
 			}
 			weaponList[args[0]][(args[1]-1)].Descrip = description;
-			writeFile(weaponList,message);
+			file.writeWeapFile(weaponList,message);
 			break;
 		case "delete":
 			if(!role){
@@ -180,7 +181,7 @@ bot.on('message', (message) =>{
 			} else {
 				message.reply("Either the weapon does not exist or does not have " + args[1] + " builds");
 			}
-			writeFile(weaponList,message);
+			file.writeWeapFile(weaponList,message);
 			break;
 		case "get":
 			if (args[0]){
@@ -212,13 +213,15 @@ bot.on('message', (message) =>{
 				neededWeapons.push(args[i]);
 				message.channel.send(args[i] + " added to the request list");
 			}
+			file.writeReqFile(neededWeapons, message);
 			break;
 		case "get_request":
-			if(neededWeapons.length == 0 || neededWeapons.length == null){
+			if(neededWeapons.length == 0){
 				message.channel.send("No requested builds");
 				break;
 			}
 			for(var i = 0; i < neededWeapons.length; i++){
+				console.log(neededWeapons[i]);
 				message.channel.send(neededWeapons[i]);
 			}
 			break;
@@ -230,6 +233,7 @@ bot.on('message', (message) =>{
 			delete neededWeapons;
 			neededWeapons = [];
 			message.reply("Requests have been cleared");
+			file.writeReqFile(neededWeapons, message);
 			break;
 		default:
 			message.reply(litteral + " is not a valid command check your spelling");
@@ -238,65 +242,3 @@ bot.on('message', (message) =>{
 });
 
 bot.login(config.token);
-
-function writeFile(list,message)
-{
-	const stream = fs.createWriteStream(config.fileWrite);
-	stream.once('open', () => {
-		var outputKeys = Object.keys(list);
-		for(var key of outputKeys){
-			if (list[key][0]){
-				for(var i = 0; i < list[key].length; i++){
-					stream.write(key + " " + list[key][i].Link + " " + list[key][i].Sustained + " " + list[key][i].Burst + " " + list[key][i].MR + " " + list[key][i].Status + " " + list[key][i].Descrip + '¯\\_(ツ)_/¯\n');
-				}
-			}
-		}
-		stream.end();
-	});
-	message.reply("Wrote");
-	console.log("The file was saved!");
-}
-
-function readJSONFile(list)
-{
-	var readIN = "";
-	fs.readFile(config.fileWrite , 'utf8', (err, readIN) => {
-		if(err){
-			message.reply("Read failed");
-			throw err;
-			return;
-		}
-		console.log(readIN);
-		var data = readIN.split("¯\\_(ツ)_/¯");
-		for(var i = 0; i < (data.length - 1); i++){
-			if(data[i][0] == "\n"){
-				data[i] = data[i].slice(1);
-			}
-			console.log(data[i] + " " + i);
-			var weapCheck = data[i].split(" ");
-			var weapAdd = {
-				Link: weapCheck[1],
-				Sustained: weapCheck[2],
-				Burst: weapCheck[3],
-				MR: weapCheck[4],
-				Status: weapCheck[5],
-				Descrip: weapCheck[6]
-			};
-			for(var j = 7; j < weapCheck.length; j++){
-				weapAdd.Descrip =  weapAdd.Descrip + " " + weapCheck[j];
-			}
-			if (!list[weapCheck[0]]){
-				list[weapCheck[0]] = [];
-				list[weapCheck[0]].push(weapAdd);
-			}else{
-				list[weapCheck[0]].push(weapAdd);
-			}
-			console.log(weapCheck[0] + " Added");
-		}
-	});
-}
-
-function clearList(list)
-{
-	list = [];
-}
