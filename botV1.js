@@ -139,6 +139,10 @@ bot.on('message', (message) =>{
 		case "list":
 			var list = Object.keys(weaponList);
 			if(list.length >= 1){
+				var out = "";
+				for(var name of list){
+					out += name + " ";
+				}
 				message.channel.send(list);
 			} else {
 				message.reply("No stored Weapons");
@@ -210,8 +214,12 @@ bot.on('message', (message) =>{
 				break;
 			}
 			for(var i = 0; i < args.length; i++){
-				neededWeapons.push(args[i]);
-				message.channel.send(args[i] + " added to the request list");
+				if(neededWeapons.indexOf(args[i]) == -1){
+					neededWeapons.push(args[i]);
+					message.channel.send(args[i] + " added to the request list");
+				} else {
+					message.channel.send(args[i] + " already exists");
+				}
 			}
 			file.writeReqFile(neededWeapons, message);
 			break;
@@ -220,19 +228,31 @@ bot.on('message', (message) =>{
 				message.channel.send("No requested builds");
 				break;
 			}
-			for(var i = 0; i < neededWeapons.length; i++){
-				console.log(neededWeapons[i]);
-				message.channel.send(neededWeapons[i]);
+			var out = "";
+			for(var name of neededWeapons){
+				out += name + "\n";
 			}
+			message.channel.send(out);
 			break;
 		case "clear_request":
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
-			delete neededWeapons;
-			neededWeapons = [];
-			message.reply("Requests have been cleared");
+			if(!args[0]){
+				delete neededWeapons;
+				neededWeapons = [];
+				message.reply("Requests have been cleared");
+				file.writeReqFile(neededWeapons, message);
+				break;
+			}
+			for(var i of args){
+				var loc = neededWeapons.indexOf(i)
+				if(loc > -1){
+					message.channel.send(i + " removed");
+					neededWeapons.splice(loc,1);
+				}
+			}
 			file.writeReqFile(neededWeapons, message);
 			break;
 		default:
