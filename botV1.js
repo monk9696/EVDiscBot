@@ -188,8 +188,8 @@ bot.on('message', (message) =>{
 					weaponList.delete(args[0]);
 				}
 			} else if (weaponList[args[0]] && weaponList[args[0]].length >= args[1]){
-				if (weaponList[args[0]].length > 1){
-					weaponList[args[0]] = weaponList[args[0]].splice((args[1]-2),1);
+				if (weaponList[args[0]].length >= 1){
+					weaponList[args[0]].splice((args[1] - 1), 1);
 				} else {
 					delete weaponList[args[0]];
 					weaponList.delete(args[0]);
