@@ -17,7 +17,6 @@ bot.on("ready", () => {
 	file.readFile(weaponList, neededWeapons);
 });
 
-
 bot.on('message', (message) =>{
 	//ignores other bots
 	if(message.author.bot){
@@ -278,6 +277,10 @@ bot.on('message', (message) =>{
 			message.reply(litteral + " is not a valid command check your spelling");
 			break;
 	}
+});
+
+bot.on('disconnected', function(){
+	bot.login(config.token);
 });
 
 bot.login(config.token);
