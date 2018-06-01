@@ -3,11 +3,19 @@ const Discord = require('discord.js');
 //Config speciffic constants
 const config = require("./auth.json");
 //filesystem
-const fs = require("./filewrite.js");;
+const fs = require("./filewrite.js");
 //Instantiates the bot
 const bot = new Discord.Client();
 
+//parse the Warframe Data
+const fetch = require('node-fetch')
+
+//Saves and stores to a file
 const file = new fs();
+
+//const ga = require("./Tempgame.js");
+//const game = new ga();
+
 var neededWeapons = [];
 var weaponList = new Map();
 var role = false;
@@ -15,6 +23,7 @@ var role = false;
 bot.on("ready", () => {
 	bot.user.setActivity("life");
 	file.readFile(weaponList, neededWeapons);
+	setInterval(warGet, 60000);
 });
 
 bot.on('message', (message) =>{
@@ -42,7 +51,21 @@ bot.on('message', (message) =>{
 	var args = litteral.split(" ");
 	litteral = args[0];
 	args.shift();
+
+
 	switch(litteral){
+		/*case "ga":
+			game.resourceFix();
+			switch(args[0]){
+				case "add":
+					game.buy(args[1]);
+					break;
+				default:
+					break;
+			}
+			game.display();
+			break;
+		*/
 		case "help":
 			switch(args[0]){
 				case "help":
@@ -284,3 +307,13 @@ bot.on('disconnected', function(){
 });
 
 bot.login(config.token);
+
+
+async function warGet(){
+	console.log("WarGet");
+	fetch("https://ws.warframestat.us/pc")
+		.then((resp) => resp.json())
+			.then(function(data){
+				console.log(data.alerts);
+			})
+}
