@@ -6,9 +6,13 @@ const config = require("./auth.json");
 const fs = require("./filewrite.js");
 //Instantiates the bot
 const bot = new Discord.Client();
-
+var botChan = bot.channels.find("name",config.channel);
 //parse the Warframe Data
 const fetch = require('node-fetch')
+var cetus = [false,""];
+var alert = [];
+var fissure = [];
+
 
 //Saves and stores to a file
 const file = new fs();
@@ -22,6 +26,7 @@ var role = false;
 
 bot.on("ready", () => {
 	bot.user.setActivity("life");
+	botChan = bot.channels.find("name",config.channel);
 	file.readFile(weaponList, neededWeapons);
 	setInterval(warGet, 60000);
 });
@@ -314,6 +319,72 @@ async function warGet(){
 	fetch("https://ws.warframestat.us/pc")
 		.then((resp) => resp.json())
 			.then(function(data){
-				console.log(data.alerts);
+				WGCetus(data);
+				WGAlert(data);
+				WGFissure(data);
 			})
+}
+
+function WGCetus(data){
+	var temp = cetus[0];
+	cetus[0] = data.cetusCycle.isDay;
+	cetus[1] = data.cetusCycle.shortString;
+	if(temp != cetus[0]){
+		if(cetus[0] == true){
+			botChan.send(/*"<@" + 339981436519972864 + ">*/"Cetus has returned to day and the Eidolons have gone back into hiding");
+		}else{
+			botChan.send(/*"<@" + 339981436519972864 + ">*/"Night has befallen Cetus and the Eidolons have been agitated and must be stoped");
+		}
+	}
+}
+
+function WGAlert(data){
+	var tempAler = [];
+	for(var i = 0; i < data.alerts.length; i++){
+		tempNode = data.alerts[i];	
+		if(alert.indexOf(tempNode.id) == -1){
+			tempAler.push(tempNode.id);
+			botChan.send({embed:{
+				color: 0xb7e06b ,
+				title: "A new alert has been activated",
+				fields:[
+				{
+					name: tempNode.mission.node,
+					value: "Mission Type: " + tempNode.mission.type + 
+						"\nEnemy Faction: " + tempNode.mission.faction + 
+						"\nAlert Reward: " + tempNode.mission.reward.asString + 
+						"\nRemaining Time: " + tempNode.eta
+				}]
+			}})
+		}else{
+			tempAler.push(tempNode.id);
+		}
+	}
+	alert = tempAler.slice();
+}
+
+function WGFissure(data){
+	var tempFis = [];
+	for(var i = 0; i < data.fissures.length; i++){
+		tempNode = data.fissures[i];
+		if(fissure.indexOf(tempNode.id) == -1){
+			tempFis.push(tempNode.id);
+			botChan.send({embed:{
+				color: 0xffff00,
+				title: "A New Fissure Has opened",
+				fields:[
+				{
+					name: tempNode.node,
+					value: "Mission Type: " + tempNode.missionType + 
+						"\nEnemy Faction: " + tempNode.enemy + 
+						"\nFissure Teir: " + tempNode.tier + 
+						"\nTime Until Collapse: " + tempNode.eta
+
+				}]
+			}})
+		}else{
+			tempFis.push(tempNode.id);
+		}
+	}
+	fissure = tempFis.slice();
 }
