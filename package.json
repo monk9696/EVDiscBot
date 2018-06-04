@@ -1,6 +1,6 @@
 {
 	"name": "WF-Build-Bot",
-	"version": "0.1.6.1",
+	"version": "0.1.7.2",
 	"description": "Stores and outputs lists of builds for specific weapons",
 	"main": "botV1.js",
 	"author": "monk9696",

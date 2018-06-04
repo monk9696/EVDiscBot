@@ -1,77 +1,73 @@
 //Discord lib
 const Discord = require('discord.js');
-//Config speciffic constants
+
+//Config for specific constants that are user based
 const config = require("./auth.json");
-//filesystem
+
+//Filesystem to store relevant data to the proper files
 const fs = require("./filewrite.js");
+const file = new fs();
+
 //Instantiates the bot
 const bot = new Discord.Client();
 var botChan = bot.channels.find("name",config.channel);
+
 //parse the Warframe Data
 const fetch = require('node-fetch')
 var cetus = [false,""];
 var alert = [];
 var fissure = [];
 
-
-//Saves and stores to a file
-const file = new fs();
-
-//const ga = require("./Tempgame.js");
-//const game = new ga();
-
+// storage variables for the data that gets stored
 var neededWeapons = [];
 var weaponList = new Map();
+
+//current universal role declaration to define the user as admin
 var role = false;
 
+
+//What the bot does on startup
 bot.on("ready", () => {
-	bot.user.setActivity("life");
-	botChan = bot.channels.find("name",config.channel);
-	file.readFile(weaponList, neededWeapons);
-	setInterval(warGet, 60000);
+	bot.user.setActivity("The Fiddle Against the Devil");//Seting the playing text for the bot
+	botChan = bot.channels.find("name",config.channel);//declares what the bot channel is for automated messages to it
+	file.readFile(weaponList, neededWeapons);//Reads in the files into variables (going to set up proper jsons and includes later)
+	setInterval(warGet, 60000);//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 });
 
+//when a message is sent in any channel it is apart of this line will execute
 bot.on('message', (message) =>{
-	//ignores other bots
+	
+	//ignores other bots messages
 	if(message.author.bot){
 		return;
 	}
-	//checks to make sure the message is in a desired channel
+	//checks to make sure the message is in the desired channel
 	if(message.channel.name != config.channel){
 		return;
 	}
-	//checks the role for a moderator status
+	//checks the role for admin status per message basis
 	if(message.member.roles.some(r=>config.botRole.includes(r.name)))	{
 		role = true;
 	}else{
 		role = false;
 	}
+
+	//separate the initial term
 	var litteral = message.content;
-	//ignores all non commands
+	//ignores all non commands inputs
 	if(litteral.indexOf(config.prefix) !== 0){
 		return;
 	}
+
 	//separates the arguments
 	litteral = litteral.slice(1);
 	var args = litteral.split(" ");
 	litteral = args[0];
 	args.shift();
 
-
+	//Switch statement fo handling all cases based off the first term
 	switch(litteral){
-		/*case "ga":
-			game.resourceFix();
-			switch(args[0]){
-				case "add":
-					game.buy(args[1]);
-					break;
-				default:
-					break;
-			}
-			game.display();
-			break;
-		*/
-		case "help":
+		case "help"://help command for explaining what a comand does
 			switch(args[0]){
 				case "help":
 					message.channel.send("Your usage of this command was very stupid @everyone come and laugh at <@" + message.member.id + ">");
@@ -123,19 +119,19 @@ bot.on('message', (message) =>{
 					break;
 			}
 			break;
-		case "ping":
+		case "ping"://simple command to check if the bot is running
 			message.channel.send('pong');
 			break;
-		case "role":
+		case "role"://command to check if the user has an admin role
 			message.reply("your role value is " + role);
 			break;
-		case "roll":
+		case "roll"://rolls a die default 6 or based off input
 			if(args[0])
 				message.reply("You rolled a " + (Math.floor(Math.random() * args[0]) + 1));
 			else
 				message.reply("You rolled a " + (Math.floor(Math.random() * 6) + 1));
 			break;
-		case "add":
+		case "add"://allows adding a weapon build to the list of weapons requires admin status
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
@@ -165,7 +161,7 @@ bot.on('message', (message) =>{
 			message.channel.send(args[0] + " added to the list");
 			file.writeWeapFile(weaponList,message);
 			break;
-		case "list":
+		case "list"://list the weapons currently with a build in the system
 			var list = Object.keys(weaponList);
 			if(list.length >= 1){
 				var out = "";
@@ -181,7 +177,7 @@ bot.on('message', (message) =>{
 				message.reply("No stored Weapons");
 			}
 			break;
-		case "edit":
+		case "edit"://allows editing of the desctiption of a weapon build requires admin status
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
@@ -203,7 +199,7 @@ bot.on('message', (message) =>{
 			weaponList[args[0]][(args[1]-1)].Descrip = description;
 			file.writeWeapFile(weaponList,message);
 			break;
-		case "delete":
+		case "delete"://allow deletion of a build requires admin status
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
@@ -226,7 +222,7 @@ bot.on('message', (message) =>{
 			}
 			file.writeWeapFile(weaponList,message);
 			break;
-		case "get":
+		case "get"://allows retrival of multiple builds from the system
 			if (args[0]){
 				for (var j = 0; j < args.length; j++){
 					if (weaponList[args[j]]){
@@ -247,7 +243,7 @@ bot.on('message', (message) =>{
 			}
 			message.channel.send("Done");
 			break;
-		case "request":
+		case "request"://adds to a list of requested weapons builds by your community
 			if(args[0] == undefined){
 				message.reply("You need to add a weapon to request");
 				break;
@@ -262,7 +258,7 @@ bot.on('message', (message) =>{
 			}
 			file.writeReqFile(neededWeapons, message);
 			break;
-		case "get_request":
+		case "get_request"://returns the list of requested builds
 			if(neededWeapons.length == 0){
 				message.channel.send("No requested builds");
 				break;
@@ -280,7 +276,7 @@ bot.on('message', (message) =>{
 				message.channel.send(out);
 			}
 			break;
-		case "clear_request":
+		case "clear_request"://allows removal of the request list or to clear the whole list requires admin status
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
@@ -301,21 +297,24 @@ bot.on('message', (message) =>{
 			}
 			file.writeReqFile(neededWeapons, message);
 			break;
-		default:
+		default: //default responce when no command path is reached
 			message.reply(litteral + " is not a valid command check your spelling");
 			break;
 	}
 });
 
+//Will reconect the bot if it momentarily disconnects from the server 
+//Potentially does absolutly nothing I'm not fully sure
 bot.on('disconnected', function(){
 	bot.login(config.token);
 });
 
+//Command will log the bot in upon start up
 bot.login(config.token);
 
-
+//Function to load in the data from the Warframe API
 async function warGet(){
-	console.log("WarGet");
+	//console.log("WarGet");
 	fetch("https://ws.warframestat.us/pc")
 		.then((resp) => resp.json())
 			.then(function(data){
@@ -325,19 +324,20 @@ async function warGet(){
 			})
 }
 
+//This handles the request for cetus time changes
 function WGCetus(data){
 	var temp = cetus[0];
 	cetus[0] = data.cetusCycle.isDay;
 	cetus[1] = data.cetusCycle.shortString;
 	if(temp != cetus[0]){
 		if(cetus[0] == true){
-			botChan.send(/*"<@" + 339981436519972864 + ">*/"Cetus has returned to day and the Eidolons have gone back into hiding");
+			botChan.send("Cetus has returned to day and the Eidolons have gone back into hiding");
 		}else{
-			botChan.send(/*"<@" + 339981436519972864 + ">*/"Night has befallen Cetus and the Eidolons have been agitated and must be stoped");
+			botChan.send("Night has befallen Cetus and the Eidolons have been agitated and must be stoped");
 		}
 	}
 }
-
+//This handles the creation and posting of embeds for new alerts
 function WGAlert(data){
 	var tempAler = [];
 	for(var i = 0; i < data.alerts.length; i++){
@@ -345,7 +345,7 @@ function WGAlert(data){
 		if(alert.indexOf(tempNode.id) == -1){
 			tempAler.push(tempNode.id);
 			botChan.send({embed:{
-				color: 0xb7e06b ,
+				color: 0xff0000 ,
 				title: "A new alert has been activated",
 				fields:[
 				{
@@ -353,7 +353,11 @@ function WGAlert(data){
 					value: "Mission Type: " + tempNode.mission.type + 
 						"\nEnemy Faction: " + tempNode.mission.faction + 
 						"\nAlert Reward: " + tempNode.mission.reward.asString + 
-						"\nRemaining Time: " + tempNode.eta
+						"\nRemaining Time: " + tempNode.eta + 
+						"\nEnemy Level Range: " + tempNode.mission.minEnemyLevel + 
+						"-" + tempNode.mission.maxEnemyLevel +
+						"\nNightmare Mission: " + tempNode.mission.nightmare +
+						"\nArchwing: " + tempNode.mission.archwingRequired
 				}]
 			}})
 		}else{
@@ -362,7 +366,7 @@ function WGAlert(data){
 	}
 	alert = tempAler.slice();
 }
-
+//This handles the creation of embeds for new fissures
 function WGFissure(data){
 	var tempFis = [];
 	for(var i = 0; i < data.fissures.length; i++){
