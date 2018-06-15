@@ -17,6 +17,7 @@ const fetch = require('node-fetch')
 var cetus = [false,""];
 var alert = [];
 var fissure = [];
+var baro = false;
 
 // storage variables for the data that gets stored
 var neededWeapons = [];
@@ -321,6 +322,7 @@ async function warGet(){
 				WGCetus(data);
 				WGAlert(data);
 				WGFissure(data);
+				WGBaro(data);
 			})
 }
 
@@ -391,4 +393,23 @@ function WGFissure(data){
 		}
 	}
 	fissure = tempFis.slice();
+}
+
+function WGBaro(data){
+	if(baro == false){
+		if(data.voidTrader.active == true){
+			baro = true;
+			botChan.send("@everyone Heyoo Brother Teno, \nBaro Ki'tter is Here.")
+			botChan.send("Also premetive apology incase this breaks and does not work or display well or properly")
+			var baroInv = data.voidTrader.inventory;
+			for(var i = 0; i <=baroInv.length(); i++){
+				botChan.send(baroInv[i] + "\n");
+			}
+		console.log(baroInv);
+		}
+	}else{
+		if(data.voidTrader.active == false){
+			baro = true;
+		}
+	}
 }
