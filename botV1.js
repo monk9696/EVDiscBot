@@ -407,7 +407,7 @@ function WGBaro(data){
 			for(var i = 0; i < baroInv.length; i++){
 				embed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + " Credits: " + baroInv[i].credits)
 			}
-			botChan.send("@everyone Heyoo Brother Teno, \nBaro Ki'tter is Here.");
+			botChan.send("@everyone Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
 			botChan.send(embed);
 			console.log(baroInv);
 		
