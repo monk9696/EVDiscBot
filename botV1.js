@@ -319,9 +319,9 @@ async function warGet(){
 	fetch("https://ws.warframestat.us/pc")
 		.then((resp) => resp.json())
 			.then(function(data){
-			//	WGCetus(data);
-			//	WGAlert(data);
-			//	WGFissure(data);
+				WGCetus(data);
+				WGAlert(data);
+				WGFissure(data);
 				WGBaro(data);
 			})
 }
