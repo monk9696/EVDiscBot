@@ -29,7 +29,7 @@ var role = false;
 
 //What the bot does on startup
 bot.on("ready", () => {
-	bot.user.setActivity("The Fiddle Against the Devil");//Seting the playing text for the bot
+	bot.user.setActivity("Sacrificing Goats");//Seting the playing text for the bot
 	botChan = bot.channels.find("name",config.channel);//declares what the bot channel is for automated messages to it
 	file.readFile(weaponList, neededWeapons);//Reads in the files into variables (going to set up proper jsons and includes later)
 	setInterval(warGet, 60000);//automated alert that checks warfarme api in miliseconds 1000 = 1 second
@@ -319,9 +319,9 @@ async function warGet(){
 	fetch("https://ws.warframestat.us/pc")
 		.then((resp) => resp.json())
 			.then(function(data){
-				WGCetus(data);
-				WGAlert(data);
-				WGFissure(data);
+			//	WGCetus(data);
+			//	WGAlert(data);
+			//	WGFissure(data);
 				WGBaro(data);
 			})
 }
@@ -399,17 +399,22 @@ function WGBaro(data){
 	if(baro == false){
 		if(data.voidTrader.active == true){
 			baro = true;
-			botChan.send("@everyone Heyoo Brother Teno, \nBaro Ki'tter is Here.")
-			botChan.send("Also premetive apology incase this breaks and does not work or display well or properly")
+			var items = "";
+			const embed = new Discord.RichEmbed()
+			embed.setTitle("Baro Ki'teer's inventory");
+			embed.setColor(0x63738c);
 			var baroInv = data.voidTrader.inventory;
-			for(var i = 0; i <=baroInv.length(); i++){
-				botChan.send(baroInv[i] + "\n");
+			for(var i = 0; i < baroInv.length; i++){
+				embed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + " Credits: " + baroInv[i].credits)
 			}
-		console.log(baroInv);
-		}
-	}else{
-		if(data.voidTrader.active == false){
-			baro = true;
+			botChan.send("@everyone Heyoo Brother Teno, \nBaro Ki'tter is Here.");
+			botChan.send(embed);
+			console.log(baroInv);
+		
+		}else{
+			if(data.voidTrader.active == false){
+				baro = true;
+			}
 		}
 	}
 }
