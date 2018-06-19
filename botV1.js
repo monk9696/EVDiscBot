@@ -413,12 +413,8 @@ function WGBaro(data){
 		
 		}else{
 			if(data.voidTrader.active == false){
-			baro = false;
+				baro = true;
 			}
-		}
-	}else{
-		if (data.voidTrader.active == false){
-			baro = false;
 		}
 	}
 }
