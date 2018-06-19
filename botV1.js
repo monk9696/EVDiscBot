@@ -402,7 +402,7 @@ function WGFissure(data){
 	fissure = tempFis.slice();
 }
 
-//This Handles notification and listing of Baro ki'teer and his inventory
+//This Handles notification and listing of Baro Ki'teer and his inventory
 function WGBaro(data){
 	if(baro == false){
 		if(data.voidTrader.active == true){
@@ -413,7 +413,8 @@ function WGBaro(data){
 			embed.setColor(0x63738c);
 			var baroInv = data.voidTrader.inventory;
 			for(var i = 0; i < baroInv.length; i++){
-				embed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + " Credits: " + baroInv[i].credits)
+				embed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + 
+					" Credits: " + baroInv[i].credits);
 			}
 			anonChan.send("@everyone Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
 			anonChan.send(embed);
