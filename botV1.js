@@ -10,7 +10,8 @@ const file = new fs();
 
 //Instantiates the bot
 const bot = new Discord.Client();
-var botChan = bot.channels.find("name",config.channel);
+var botChan;
+var anonChan;
 
 //parse the Warframe Data
 const fetch = require('node-fetch')
@@ -30,8 +31,9 @@ var role = false;
 //What the bot does on startup
 bot.on("ready", () => {
 	bot.user.setActivity("Sacrificing Goats");//Seting the playing text for the bot
-	botChan = bot.channels.find("name",config.channel);//declares what the bot channel is for automated messages to it
 	file.readFile(weaponList, neededWeapons);//Reads in the files into variables (going to set up proper jsons and includes later)
+	botChan = bot.channels.find("name",config.channel[0]);
+	anonChan = bot.channels.find("name",config.channel[1]);
 	setInterval(warGet, 60000);//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 });
 
@@ -42,8 +44,17 @@ bot.on('message', (message) =>{
 	if(message.author.bot){
 		return;
 	}
+
+	//separate the initial term
+	var litteral = message.content;
+	//ignores all non commands inputs
+	if(litteral.indexOf(config.prefix) !== 0){
+		return;
+	}
+
 	//checks to make sure the message is in the desired channel
-	if(message.channel.name != config.channel){
+	if(message.channel != botChan){
+		message.reply("Wrong channel, please use the __**" + config.channel[0] + "**__ channel for bot commands");
 		return;
 	}
 	//checks the role for admin status per message basis
@@ -51,13 +62,6 @@ bot.on('message', (message) =>{
 		role = true;
 	}else{
 		role = false;
-	}
-
-	//separate the initial term
-	var litteral = message.content;
-	//ignores all non commands inputs
-	if(litteral.indexOf(config.prefix) !== 0){
-		return;
 	}
 
 	//separates the arguments
@@ -313,6 +317,7 @@ bot.on('disconnected', function(){
 //Command will log the bot in upon start up
 bot.login(config.token);
 
+
 //Function to load in the data from the Warframe API
 async function warGet(){
 	//console.log("WarGet");
@@ -339,6 +344,7 @@ function WGCetus(data){
 		}
 	}
 }
+
 //This handles the creation and posting of embeds for new alerts
 function WGAlert(data){
 	var tempAler = [];
@@ -368,6 +374,7 @@ function WGAlert(data){
 	}
 	alert = tempAler.slice();
 }
+
 //This handles the creation of embeds for new fissures
 function WGFissure(data){
 	var tempFis = [];
@@ -395,6 +402,7 @@ function WGFissure(data){
 	fissure = tempFis.slice();
 }
 
+//This Handles notification and listing of Baro ki'teer and his inventory
 function WGBaro(data){
 	if(baro == false){
 		if(data.voidTrader.active == true){
@@ -407,8 +415,8 @@ function WGBaro(data){
 			for(var i = 0; i < baroInv.length; i++){
 				embed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + " Credits: " + baroInv[i].credits)
 			}
-			botChan.send("@everyone Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
-			botChan.send(embed);
+			anonChan.send("@everyone Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
+			anonChan.send(embed);
 			console.log(baroInv);
 		
 		}else{
@@ -417,4 +425,8 @@ function WGBaro(data){
 			}
 		}
 	}
+}
+
+function WGNews(data){
+
 }
