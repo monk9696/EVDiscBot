@@ -19,7 +19,7 @@ var cetus = [false,""];
 var alert = [];
 var fissure = [];
 var baro = false;
-
+var news = [];
 // storage variables for the data that gets stored
 var neededWeapons = [];
 var weaponList = new Map();
@@ -27,13 +27,17 @@ var weaponList = new Map();
 //current universal role declaration to define the user as admin
 var role = false;
 
+var botGuild;
+var botRole;
 
 //What the bot does on startup
 bot.on("ready", () => {
+	botGuild = bot.guilds.find('name', config.mainGuild);
+	botRole = botGuild.roles.find('name', config.botRoleMess[0]);
 	bot.user.setActivity("Sacrificing Goats");//Seting the playing text for the bot
 	file.readFile(weaponList, neededWeapons);//Reads in the files into variables (going to set up proper jsons and includes later)
-	botChan = bot.channels.find("name",config.channel[0]);
-	anonChan = bot.channels.find("name",config.channel[1]);
+	botChan = botGuild.channels.find("name",config.channel[0]);
+	anonChan = botGuild.channels.find("name",config.channel[1]);
 	setInterval(warGet, 60000);//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 });
 
@@ -58,7 +62,7 @@ bot.on('message', (message) =>{
 		return;
 	}
 	//checks the role for admin status per message basis
-	if(message.member.roles.some(r=>config.botRole.includes(r.name)))	{
+	if(message.member.roles.some(r=>config.botRoleAdmin.includes(r.name)))	{
 		role = true;
 	}else{
 		role = false;
@@ -308,11 +312,10 @@ bot.on('message', (message) =>{
 	}
 });
 
-//Will reconect the bot if it momentarily disconnects from the server 
-//Potentially does absolutly nothing I'm not fully sure
-bot.on('disconnected', function(){
-	bot.login(config.token);
-});
+//Should reconect the bot if it momentarily disconnects from the server 
+bot.on("error", (e) => console.error(e));
+bot.on("warn", (e) => console.warn(e));
+//bot.on("debug", (e) => console.info(e));
 
 //Command will log the bot in upon start up
 bot.login(config.token);
@@ -328,6 +331,7 @@ async function warGet(){
 				WGAlert(data);
 				WGFissure(data);
 				WGBaro(data);
+				WGNews(data);
 			})
 }
 
@@ -349,7 +353,7 @@ function WGCetus(data){
 function WGAlert(data){
 	var tempAler = [];
 	for(var i = 0; i < data.alerts.length; i++){
-		tempNode = data.alerts[i];	
+		var tempNode = data.alerts[i];	
 		if(alert.indexOf(tempNode.id) == -1){
 			tempAler.push(tempNode.id);
 			botChan.send({embed:{
@@ -379,7 +383,7 @@ function WGAlert(data){
 function WGFissure(data){
 	var tempFis = [];
 	for(var i = 0; i < data.fissures.length; i++){
-		tempNode = data.fissures[i];
+		var tempNode = data.fissures[i];
 		if(fissure.indexOf(tempNode.id) == -1){
 			tempFis.push(tempNode.id);
 			botChan.send({embed:{
@@ -429,5 +433,24 @@ function WGBaro(data){
 }
 
 function WGNews(data){
+	var tempNews = [];
+	for(var i = 0; i < data.news.length; i++){
+		var tempNode = data.news[i];
+		if(news.indexOf(tempNode.id) == -1){
+			tempNews.push(tempNode.id);
+			if(tempNode.update == true || tempNode.primeAccess == true){
+				anonChan.send("@everyone " + tempNode.message +
+					"\nFourm Link: " + tempNode.link);
+			}else{
+				if(tempNode.translations.en != null){
 
+					botChan.send(botRole + tempNode.message +
+						"\nFourm Link: " + tempNode.link);
+				}
+			}
+		}else{
+			tempNews.push(tempNode.id);
+		}
+	}
+	news = tempNews.slice();	
 }
