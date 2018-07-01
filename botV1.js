@@ -32,13 +32,27 @@ var botRole;
 
 //What the bot does on startup
 bot.on("ready", () => {
+	
+	//sets up the main guild for the bot
 	botGuild = bot.guilds.find('name', config.mainGuild);
-	botRole = botGuild.roles.find('name', config.botRoleMess[0]);
-	bot.user.setActivity("Sacrificing Goats");//Seting the playing text for the bot
-	file.readFile(weaponList, neededWeapons);//Reads in the files into variables (going to set up proper jsons and includes later)
+	//declares a main testing role
+	botRole = getRole(config.botRoleMess[0]);
+	
+
+	//Seting the playing text for the bot
+	bot.user.setActivity("Sacrificing Goats");
+	//Reads in the files into variables (going to set up proper jsons and includes later)
+	file.readFile(weaponList, neededWeapons);
+	
+	//Defines text-channels for certain bot outputs
+	//botchannel
 	botChan = botGuild.channels.find("name",config.channel[0]);
+	//announcements
 	anonChan = botGuild.channels.find("name",config.channel[1]);
-	setInterval(warGet, 60000);//automated alert that checks warfarme api in miliseconds 1000 = 1 second
+	
+
+//automated alert that checks warfarme api in miliseconds 1000 = 1 second
+	setInterval(warGet, 60000);
 });
 
 //when a message is sent in any channel it is apart of this line will execute
@@ -327,11 +341,11 @@ async function warGet(){
 	fetch("https://ws.warframestat.us/pc")
 		.then((resp) => resp.json())
 			.then(function(data){
-				WGCetus(data);
+				//WGCetus(data);
 				WGAlert(data);
-				WGFissure(data);
-				WGBaro(data);
-				WGNews(data);
+				//WGFissure(data);
+				//WGBaro(data);
+				//WGNews(data);
 			})
 }
 
@@ -352,29 +366,32 @@ function WGCetus(data){
 //This handles the creation and posting of embeds for new alerts
 function WGAlert(data){
 	var tempAler = [];
+	var aler = false;
+	var embed = new Discord.RichEmbed();
+	embed.setTitle("New alerts have been activated")
+	embed.setColor(0xff0000);
 	for(var i = 0; i < data.alerts.length; i++){
 		var tempNode = data.alerts[i];	
 		if(alert.indexOf(tempNode.id) == -1){
+			aler = true;
 			tempAler.push(tempNode.id);
-			botChan.send({embed:{
-				color: 0xff0000 ,
-				title: "A new alert has been activated",
-				fields:[
-				{
-					name: tempNode.mission.node,
-					value: "Mission Type: " + tempNode.mission.type + 
-						"\nEnemy Faction: " + tempNode.mission.faction + 
-						"\nAlert Reward: " + tempNode.mission.reward.asString + 
-						"\nRemaining Time: " + tempNode.eta + 
-						"\nEnemy Level Range: " + tempNode.mission.minEnemyLevel + 
-						"-" + tempNode.mission.maxEnemyLevel +
-						"\nNightmare Mission: " + tempNode.mission.nightmare +
-						"\nArchwing: " + tempNode.mission.archwingRequired
-				}]
-			}})
+			embed.addField(tempNode.mission.node,
+				"Mission Type: " + tempNode.mission.type + 
+				"\nEnemy Faction: " + tempNode.mission.faction + 
+				"\nAlert Reward: " + tempNode.mission.reward.asString + 
+				"\nRemaining Time: " + tempNode.eta + 
+				"\nEnemy Level Range: " + tempNode.mission.minEnemyLevel + 
+				"-" + tempNode.mission.maxEnemyLevel +
+				"\nNightmare Mission: " + tempNode.mission.nightmare +
+				"\nArchwing: " + tempNode.mission.archwingRequired
+				
+			);
 		}else{
 			tempAler.push(tempNode.id);
 		}
+	}if(aler == true){
+		botChan.send(getRole(config.botRoleMess[3]) + "");
+		botChan.send(embed);
 	}
 	alert = tempAler.slice();
 }
@@ -382,26 +399,25 @@ function WGAlert(data){
 //This handles the creation of embeds for new fissures
 function WGFissure(data){
 	var tempFis = [];
+	var fis = false;
+	
 	for(var i = 0; i < data.fissures.length; i++){
 		var tempNode = data.fissures[i];
 		if(fissure.indexOf(tempNode.id) == -1){
+			fis = true;
 			tempFis.push(tempNode.id);
-			botChan.send({embed:{
-				color: 0xffff00,
-				title: "A New Fissure Has opened",
-				fields:[
-				{
-					name: tempNode.node,
-					value: "Mission Type: " + tempNode.missionType + 
+			embed.addField( tempNode.node,
+						"Mission Type: " + tempNode.missionType + 
 						"\nEnemy Faction: " + tempNode.enemy + 
 						"\nFissure Teir: " + tempNode.tier + 
-						"\nTime Until Collapse: " + tempNode.eta
+						"\nTime Until Collapse: " + tempNode.eta);
 
-				}]
-			}})
 		}else{
 			tempFis.push(tempNode.id);
 		}
+	}if(fis == true){
+		botChan.send(getRole(config.botRoleMess[2]) + "");
+		botChan.send(embed);
 	}
 	fissure = tempFis.slice();
 }
@@ -411,8 +427,7 @@ function WGBaro(data){
 	if(baro == false){
 		if(data.voidTrader.active == true){
 			baro = true;
-			var items = "";
-			const embed = new Discord.RichEmbed()
+			const embed = new Discord.RichEmbed();
 			embed.setTitle("Baro Ki'teer's inventory");
 			embed.setColor(0x63738c);
 			var baroInv = data.voidTrader.inventory;
@@ -422,7 +437,7 @@ function WGBaro(data){
 			}
 			anonChan.send("@everyone Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
 			anonChan.send(embed);
-			console.log(baroInv);
+			//console.log(baroInv);
 		
 		}else{
 			if(data.voidTrader.active == false){
@@ -444,7 +459,7 @@ function WGNews(data){
 			}else{
 				if(tempNode.translations.en != null){
 
-					botChan.send(botRole + tempNode.message +
+					botChan.send(getRole(config.botRoleMess[1]) + tempNode.message +
 						"\nFourm Link: " + tempNode.link);
 				}
 			}
@@ -453,4 +468,8 @@ function WGNews(data){
 		}
 	}
 	news = tempNews.slice();	
+}
+
+function getRole(string){
+	return (botGuild.roles.find('name', string));
 }
