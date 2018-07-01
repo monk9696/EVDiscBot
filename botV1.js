@@ -459,7 +459,7 @@ function WGNews(data){
 			}else{
 				if(tempNode.translations.en != null){
 
-					botChan.send(getRole(config.botRoleMess[1]) + tempNode.message +
+					botChan.send(getRole(config.botRoleMess[1]) + "" + tempNode.message +
 						"\nFourm Link: " + tempNode.link);
 				}
 			}
