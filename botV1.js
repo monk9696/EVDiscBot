@@ -432,6 +432,7 @@ function WGBaro(data){
 	}
 }
 
+//Handles Notificatons for News hot off the press from Warframe
 function WGNews(data){
 	var tempNews = [];
 	for(var i = 0; i < data.news.length; i++){
