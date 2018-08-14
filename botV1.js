@@ -13,6 +13,8 @@ const bot = new Discord.Client();
 var botChan;
 var anonChan;
 
+
+var tempMess = config.roleMessage
 //parse the Warframe Data
 const fetch = require('node-fetch')
 var cetus = [false,""];
@@ -51,8 +53,12 @@ bot.on("ready", () => {
 	anonChan = botGuild.channels.find("name",config.channel[1]);
 	
 
-//automated alert that checks warfarme api in miliseconds 1000 = 1 second
+	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
+
+
+	//set up for the auto role selection
+	tempMess = roleSet(tempMess);
 });
 
 //when a message is sent in any channel it is apart of this line will execute
@@ -148,6 +154,30 @@ bot.on('message', (message) =>{
 		case "role"://command to check if the user has an admin role
 			message.reply("your role value is " + role);
 			break;
+		case "roleFix":
+			message.delete();
+			tempMess.then(l=>{
+				var array = l.reactions.array();
+					console.log(array);
+					for(var i = 0; i < array.size; i++){
+						var emo = array[i].emoji.name;
+						var pepes = array[i].users.array();
+						for(var j = 0; j < pepes.size; j++){
+							switch(emo){
+								case "😀" :
+									
+									break;
+
+								default:
+									pepes[i].createDM().then(l=>{
+										l.send(emo + " is not a suggested reaction and has no link please avoid this in the future");
+									})
+							}
+						}
+					}
+				});
+				
+				break;
 		case "roll"://rolls a die default 6 or based off input
 			if(args[0])
 				message.reply("You rolled a " + (Math.floor(Math.random() * args[0]) + 1));
@@ -342,7 +372,7 @@ async function warGet(){
 		.then((resp) => resp.json())
 			.then(function(data){
 				//WGCetus(data);
-				WGAlert(data);
+				//WGAlert(data);
 				//WGFissure(data);
 				//WGBaro(data);
 				//WGNews(data);
@@ -473,4 +503,30 @@ function WGNews(data){
 
 function getRole(string){
 	return (botGuild.roles.find('name', string));
+}
+
+function roleSet(message){
+	if(message == null){
+		botChan.send("this is a new message");
+		message = botChan.fetchMessages({limit: 1})
+			.then(function(value){
+				console.log(value.first().id);
+				return value.first()
+			});
+		message.then(l=> {
+			l.edit('React with a 🌕 to gain or lose the Fissure role\n\nReact with 😀 to gain or lose the Alert role\n\nWhen you are ready send !roleFix in ' + config.channel[1]);
+		});
+	}else{
+		message = botChan.fetchMessage(message)
+			.then(value => {
+				console.log(value.first().id);
+				return value.first();
+			})
+	}
+	message.then(message => {
+		message.react('🌕');
+		message.react('😀');
+	});
+
+	return message;
 }
