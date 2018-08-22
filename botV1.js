@@ -13,8 +13,9 @@ const bot = new Discord.Client();
 var botChan;
 var anonChan;
 
+//Defines the message for the role selection
+var roleMess = config.roleMessage;
 
-var tempMess = config.roleMessage
 //parse the Warframe Data
 const fetch = require('node-fetch')
 var cetus = [false,""];
@@ -55,10 +56,8 @@ bot.on("ready", () => {
 
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
-
-
 	//set up for the auto role selection
-	tempMess = roleSet(tempMess);
+	roleMess = roleSet(roleMess);
 });
 
 //when a message is sent in any channel it is apart of this line will execute
@@ -107,6 +106,9 @@ bot.on('message', (message) =>{
 				case "role":
 					message.channel.send("This Command states if your current role has access to all viable commands");
 					break;
+				case "roleFix":
+					message.channel.send("This command will fix the roles for all reaction that want to gain or lose a specific role");					
+					break;
 				case "roll":
 					message.channel.send("This command can be used to roll a dice of a specified size, !roll [number] if you leave number empty it will default to 6");
 					break;
@@ -154,50 +156,86 @@ bot.on('message', (message) =>{
 		case "role"://command to check if the user has an admin role
 			message.reply("your role value is " + role);
 			break;
-		case "roleFix":
-			message.delete();
-			tempMess.then(l=>{
-				var array = l.reactions.array();
-					console.log(array);
-					for(var i = 0; i < array.size; i++){
-						var emo = array[i].emoji.name;
-						var pepes = array[i].users.array();
-						for(var j = 0; j < pepes.size; j++){
-							switch(emo){
-								case "😀" :
-									
-									break;
-
-								default:
-									pepes[i].createDM().then(l=>{
-										l.send(emo + " is not a suggested reaction and has no link please avoid this in the future");
-									})
+		case "roleFix"://command to triger the automatic setting of roles using reactions and the roleSet function.
+			//Call Upon the role Message when found
+			roleMess.then(l=>{
+				//Generate the List of emoji's as an array
+				let emojArr = l.reactions.array();
+					//for each emoji
+					for(let i = 0; i < emojArr.length; i++){
+						let pepes = emojArr[i].users.array();
+						//for each user
+						for(let j = 0; j < pepes.length; j++){
+							//Accept only non-bot users
+							if (!pepes[j].bot){
+								//based of each emoji for the reaction
+								switch(emojArr[i].emoji.name){
+									case "😀" :
+										//Identify the user as a guild member object
+										let mem = botGuild.fetchMember(pepes[j]).then(memb=>{
+											return memb;
+										});
+										//Once the guild member is recieved
+										mem.then(l=> {
+											//Identify if they have the role for said member
+											if(l.roles.array().includes(getRole(config.botRoleMess[2]))){
+												//remove the role if they have it
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleMess[2]))});
+											}else{
+												//add's the role if they don't have it
+												mem.then(memb => {memb.addRole(getRole(config.botRoleMess[2]))});
+											}
+										})
+										break;
+									default:
+										//If not a valid emoji DM the user that it is a invalid emoji
+										let emo = emojArr[i].emoji.name;
+										pepes[j].createDM().then(l=>{
+											l.send(emo + " is not a suggested reaction and has no link please avoid this in the future");
+										});
+										break;
+								}
 							}
 						}
 					}
 				});
-				
-				break;
+			//delete the users command
+			message.delete();
+			//clear and re-assign the reaction's to the role message
+			roleMess = roleMess.then(l=>{
+				return l.clearReactions();
+			});
+			roleMess.then(l=>{
+				roleSet(l.id);
+			});
+			break;
 		case "roll"://rolls a die default 6 or based off input
-			if(args[0])
+			//if it is acompanied by a number roll for that number
+			if(typeof args[0] == "number")
 				message.reply("You rolled a " + (Math.floor(Math.random() * args[0]) + 1));
 			else
 				message.reply("You rolled a " + (Math.floor(Math.random() * 6) + 1));
 			break;
 		case "add"://allows adding a weapon build to the list of weapons requires admin status
+			//check for the admin role as defined by the auth.json
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
+			//check for the minimum number of arguments
 			if(args.length < 7){
 			message.reply("You need to include the weapon name, link to the build, Sustained and Burst DPS numbers, the weapons MR, and the Status chance and a description");
 				break;
 			}
-			var descrip = "";
-			for(var r = 6; r < args.length; r++){
+			//generate the different parts of the weapon struct
+			
+			//description
+			let descrip = "";
+			for(let r = 6; r < args.length; r++){
 				descrip = descrip + args[r] + " ";
 			}
-			var stuff = {
+			//define everything to the weapon
+			let Weapon = {
 				Link: args[1],
 				Sustained: args[2],
 				Burst: args[3],
@@ -205,20 +243,23 @@ bot.on('message', (message) =>{
 				Status: args[5],
 				Descrip: descrip
 			};
+			//check if the weapon already exists in the system and adds it to the weapon
+			//if not will add the weapon to the map and add it to the list
 			if(weaponList[args[0]]){
-				weaponList[args[0]].push(stuff);
+				weaponList[args[0]].push(Weapon);
 			} else {
 				weaponList[args[0]] = [];
-				weaponList[args[0]].push(stuff);
+				weaponList[args[0]].push(Weapon);
 			}
+			//confirm that it is added and will save the new weapon set to the list
 			message.channel.send(args[0] + " added to the list");
 			file.writeWeapFile(weaponList,message);
 			break;
 		case "list"://list the weapons currently with a build in the system
-			var list = Object.keys(weaponList);
+			let list = Object.keys(weaponList);
 			if(list.length >= 1){
-				var out = "";
-				for(var name of list){
+				let out = "";
+				for(let name of list){
 					out += name + ", ";
 					if(out.length >= 1500){
 						message.channel.send(out);
@@ -501,16 +542,18 @@ function WGNews(data){
 	news = tempNews.slice();	
 }
 
+//Obtain the role object from a guild based of the exact name of the role
 function getRole(string){
 	return (botGuild.roles.find('name', string));
 }
 
+//Create or find the role setting message and will add the specified reactions to the message
+//take in the message ID and return the message object, This simplifies storing and finding
 function roleSet(message){
 	if(message == null){
 		botChan.send("this is a new message");
 		message = botChan.fetchMessages({limit: 1})
 			.then(function(value){
-				console.log(value.first().id);
 				return value.first()
 			});
 		message.then(l=> {
@@ -519,13 +562,12 @@ function roleSet(message){
 	}else{
 		message = botChan.fetchMessage(message)
 			.then(value => {
-				console.log(value.first().id);
-				return value.first();
+				return value;
 			})
 	}
-	message.then(message => {
-		message.react('🌕');
-		message.react('😀');
+	message.then(async(message) =>{
+		await message.react('🌕');
+		await message.react('😀');
 	});
 
 	return message;
