@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 
 //Config for specific constants that are user based
 const config = require("./auth.json");
+var wGetLog = require("./WGet.json");
 
 //Filesystem to store relevant data to the proper files
 const fs = require("./filewrite.js");
@@ -14,15 +15,12 @@ var botChan;
 var anonChan;
 
 //Defines the message for the role selection
-var roleMess = config.roleMessage;
+	//var roleMess = config.roleMessage;
 
 //parse the Warframe Data
 const fetch = require('node-fetch')
 var cetus = [false,""];
-var alert = [];
-var fissure = [];
 var baro = false;
-var news = [];
 // storage variables for the data that gets stored
 var neededWeapons = [];
 var weaponList = new Map();
@@ -57,7 +55,7 @@ bot.on("ready", () => {
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
 	//set up for the auto role selection
-	roleMess = roleSet(roleMess);
+		//roleMess = roleSet(roleMess);
 });
 
 //when a message is sent in any channel it is apart of this line will execute
@@ -106,9 +104,9 @@ bot.on('message', (message) =>{
 				case "role":
 					message.channel.send("This Command states if your current role has access to all viable commands");
 					break;
-				case "roleFix":
+					/*case "roleFix":
 					message.channel.send("This command will fix the roles for all reaction that want to gain or lose a specific role");					
-					break;
+					break;*/
 				case "roll":
 					message.channel.send("This command can be used to roll a dice of a specified size, !roll [number] if you leave number empty it will default to 6");
 					break;
@@ -156,7 +154,7 @@ bot.on('message', (message) =>{
 		case "role"://command to check if the user has an admin role
 			message.reply("your role value is " + role);
 			break;
-		case "roleFix"://command to triger the automatic setting of roles using reactions and the roleSet function.
+			/*case "roleFix"://command to triger the automatic setting of roles using reactions and the roleSet function.
 			//Call Upon the role Message when found
 			roleMess.then(l=>{
 				//Generate the List of emoji's as an array
@@ -178,12 +176,12 @@ bot.on('message', (message) =>{
 										//Once the guild member is recieved
 										mem.then(l=> {
 											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleMess[2]))){
+											if(l.roles.array().includes(getRole(config.botRoleMess[3]))){
 												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleMess[2]))});
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleMess[3]))});
 											}else{
 												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleMess[2]))});
+												mem.then(memb => {memb.addRole(getRole(config.botRoleMess[3]))});
 											}
 										})
 										break;
@@ -208,7 +206,7 @@ bot.on('message', (message) =>{
 			roleMess.then(l=>{
 				roleSet(l.id);
 			});
-			break;
+			break;*/
 		case "roll"://rolls a die default 6 or based off input
 			//if it is acompanied by a number roll for that number
 			if(typeof args[0] == "number")
@@ -412,12 +410,12 @@ async function warGet(){
 	fetch("https://ws.warframestat.us/pc")
 		.then((resp) => resp.json())
 			.then(function(data){
-				//WGCetus(data);
-				//WGAlert(data);
-				//WGFissure(data);
-				//WGBaro(data);
-				//WGNews(data);
-			})
+				WGCetus(data);
+				WGAlert(data);
+				WGFissure(data);
+				WGBaro(data);
+				WGNews(data);
+			}).then(rep => {file.writeWGet(wGetLog)});	
 }
 
 //This handles the request for cetus time changes
@@ -436,61 +434,63 @@ function WGCetus(data){
 
 //This handles the creation and posting of embeds for new alerts
 function WGAlert(data){
-	var tempAler = [];
-	var aler = false;
-	var embed = new Discord.RichEmbed();
+	let alert = [];
+	let alertBool = false;
+	let embed = new Discord.RichEmbed();
 	embed.setTitle("New alerts have been activated")
 	embed.setColor(0xff0000);
-	for(var i = 0; i < data.alerts.length; i++){
-		var tempNode = data.alerts[i];	
-		if(alert.indexOf(tempNode.id) == -1){
-			aler = true;
-			tempAler.push(tempNode.id);
-			embed.addField(tempNode.mission.node,
-				"Mission Type: " + tempNode.mission.type + 
-				"\nEnemy Faction: " + tempNode.mission.faction + 
-				"\nAlert Reward: " + tempNode.mission.reward.asString + 
-				"\nRemaining Time: " + tempNode.eta + 
-				"\nEnemy Level Range: " + tempNode.mission.minEnemyLevel + 
-				"-" + tempNode.mission.maxEnemyLevel +
-				"\nNightmare Mission: " + tempNode.mission.nightmare +
-				"\nArchwing: " + tempNode.mission.archwingRequired
+	for(let i = 0; i < data.alerts.length; i++){
+		let alertNode = data.alerts[i];	
+		if(wGetLog.alert.indexOf(alertNode.id) == -1){
+			alertBool = true;
+			alert.push(alertNode.id);
+			embed.addField(alertNode.mission.node,
+				"Mission Type: " + alertNode.mission.type + 
+				"\nEnemy Faction: " + alertNode.mission.faction + 
+				"\nAlert Reward: " + alertNode.mission.reward.asString + 
+				"\nRemaining Time: " + alertNode.eta + 
+				"\nEnemy Level Range: " + alertNode.mission.minEnemyLevel + 
+				"-" + alertNode.mission.maxEnemyLevel +
+				"\nNightmare Mission: " + alertNode.mission.nightmare +
+				"\nArchwing: " + alertNode.mission.archwingRequired
 				
 			);
 		}else{
-			tempAler.push(tempNode.id);
+			alert.push(alertNode.id);
 		}
-	}if(aler == true){
+	}if(alertBool == true){
 		botChan.send(getRole(config.botRoleMess[3]) + "");
 		botChan.send(embed);
 	}
-	alert = tempAler.slice();
+	wGetLog.alert = alert.slice();
 }
 
 //This handles the creation of embeds for new fissures
 function WGFissure(data){
-	var tempFis = [];
-	var fis = false;
-	
+	var fissure = [];
+	var fisBool = false;
+	const embed = new Discord.RichEmbed();
+	embed.setTitle("New Fissures have Opened");
+	embed.setColor(0xffff00);
 	for(var i = 0; i < data.fissures.length; i++){
-		var tempNode = data.fissures[i];
-		if(fissure.indexOf(tempNode.id) == -1){
-			fis = true;
-			tempFis.push(tempNode.id);
-			embed.addField( tempNode.node,
-						"Mission Type: " + tempNode.missionType + 
-						"\nEnemy Faction: " + tempNode.enemy + 
-						"\nFissure Teir: " + tempNode.tier + 
-						"\nTime Until Collapse: " + tempNode.eta);
+		var fissureNode = data.fissures[i];
+		if(wGetLog.fissure.indexOf(fissureNode.id) == -1){
+			fisBool = true;
+			fissure.push(fissureNode.id);
+			embed.addField( fissureNode.node,
+						"Mission Type: " + fissureNode.missionType + 
+						"\nEnemy Faction: " + fissureNode.enemy + 
+						"\nFissure Teir: " + fissureNode.tier + 
+						"\nTime Until Collapse: " + fissureNode.eta);
 
 		}else{
-			tempFis.push(tempNode.id);
+			fissure.push(fissureNode.id);
 		}
-	}if(fis == true){
+	}if(fisBool == true){
 		botChan.send(getRole(config.botRoleMess[2]) + "");
 		botChan.send(embed);
 	}
-	fissure = tempFis.slice();
+	wGetLog.fissure = fissure.slice();
 }
 
 //This Handles notification and listing of Baro Ki'teer and his inventory
@@ -520,33 +520,33 @@ function WGBaro(data){
 
 //Handles Notificatons for News hot off the press from Warframe
 function WGNews(data){
-	var tempNews = [];
-	for(var i = 0; i < data.news.length; i++){
-		var tempNode = data.news[i];
-		if(news.indexOf(tempNode.id) == -1){
-			tempNews.push(tempNode.id);
-			if(tempNode.update == true || tempNode.primeAccess == true){
-				anonChan.send("@everyone " + tempNode.message +
-					"\nFourm Link: " + tempNode.link);
+	let news = [];
+	for(let i = 0; i < data.news.length; i++){
+		let newsNode = data.news[i];
+		if(wGetLog.news.indexOf(newsNode.id) == -1){
+			news.push(newsNode.id);
+			if(newsNode.update == true || newsNode.primeAccess == true){
+				anonChan.send("@everyone " + newsNode.message +
+					"\nFourm Link: " + newsNode.link);
 			}else{
-				if(tempNode.translations.en != null){
+				if(newsNode.translations.en != null){
 
-					botChan.send(getRole(config.botRoleMess[1]) + "" + tempNode.message +
-						"\nFourm Link: " + tempNode.link);
+					botChan.send(getRole(config.botRoleMess[1]) + " " + newsNode.message +
+						"\nFourm Link: " + newsNode.link);
 				}
 			}
 		}else{
-			tempNews.push(tempNode.id);
+			news.push(newsNode.id);
 		}
 	}
-	news = tempNews.slice();	
+	wGetLog.news = news.slice();	
 }
 
 //Obtain the role object from a guild based of the exact name of the role
 function getRole(string){
 	return (botGuild.roles.find('name', string));
 }
-
+/*
 //Create or find the role setting message and will add the specified reactions to the message
 //take in the message ID and return the message object, This simplifies storing and finding
 function roleSet(message){
@@ -572,3 +572,4 @@ function roleSet(message){
 
 	return message;
 }
+*/
