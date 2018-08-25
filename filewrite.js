@@ -99,6 +99,14 @@ class fileWrite{
 		});
 	}
 
+	writeWGet(data){
+		let output = JSON.stringify(data, null, 2);
+		fs.writeFile(config.fileWrite[2], output, (err)=> {
+			if(err) throw err;
+			console.log("fileSaved");
+		});
+	}
+
 	readFile(weap, req){
 		var readIN = "";
 		fs.readFile(config.fileWrite[0] , 'utf8', (err, readIN) => {
