@@ -229,7 +229,7 @@ bot.on('message', (message) =>{
 			}
 			//generate the different parts of the weapon struct
 			
-			//description
+			//description of the build detail
 			let descrip = "";
 			for(let r = 6; r < args.length; r++){
 				descrip = descrip + args[r] + " ";
