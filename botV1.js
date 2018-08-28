@@ -19,7 +19,7 @@ var anonChan;
 
 //parse the Warframe Data
 const fetch = require('node-fetch')
-var cetus = [false,""];
+var cetus = [null,""];
 var baro = false;
 // storage variables for the data that gets stored
 var neededWeapons = [];
@@ -459,11 +459,11 @@ async function warGet(){
 		.then((resp) => resp.json())
 			//pass in the json object for notification
 			.then(function(data){
-				//WGCetus(data);
-				//WGAlert(data);
-				//WGFissure(data);
-				//WGBaro(data);
-				//WGNews(data);
+			//	WGCetus(data);
+			//	WGAlert(data);
+			//	WGFissure(data);
+			//	WGBaro(data);
+			//	WGNews(data);
 			})
 				//update the json for the cached id's to streamline relauching the bot to reduce notifications
 				.then(rep => {file.writeWGet(wGetLog)});	
@@ -471,33 +471,38 @@ async function warGet(){
 
 
 //functions to check to reweite for simplification
-//cetus,news 
-//comment: all
+//news 
 
 
 //This handles the request for cetus time changes
 function WGCetus(data){
-	let temp = cetus[0];
-	cetus[0] = data.cetusCycle.isDay;
-	cetus[1] = data.cetusCycle.shortString;
-	if(temp != cetus[0]){
+	//checks if the cycle has swaped
+	if(cetus[0] != data.cetusCycle.isDay){
+		//change the day night value
+		cetus[0] = data.cetusCycle.isDay;
 		if(cetus[0] == true){
 			botChan.send("Cetus has returned to day and the Eidolons have gone back into hiding");
 		}else{
-			botChan.send("Night has befallen Cetus and the Eidolons have been agitated and must be stoped");
+			botChan.send("Night has befallen Cetus and the Eidolons have been agitated and must be stoped");	
 		}
 	}
+	//update the quick output for bot switch statement
+	cetus[1] = data.cetusCycle.shortString;
 }
 
 //This handles the creation and posting of embeds for new alerts
 function WGAlert(data){
+	//define the alert id list and the check value for a new notification
 	let alert = [];
 	let alertBool = false;
+	//initiate and set up the discord embed output
 	let embed = new Discord.RichEmbed();
 	embed.setTitle("New alerts have been activated")
 	embed.setColor(0xff0000);
+	//go through the list of alerts
 	for(let i = 0; i < data.alerts.length; i++){
-		let alertNode = data.alerts[i];	
+		let alertNode = data.alerts[i];
+		//identifies there is a new allert and adds it to the embed	
 		if(wGetLog.alert.indexOf(alertNode.id) == -1){
 			alertBool = true;
 			alert.push(alertNode.id);
@@ -515,22 +520,28 @@ function WGAlert(data){
 		}else{
 			alert.push(alertNode.id);
 		}
+	//check if a new embed is going to be pushed and push it
 	}if(alertBool == true){
 		botChan.send(getRole(config.botRoleMess[3]) + "");
 		botChan.send(embed);
 	}
+	//update the alert list since there is a new alert
 	wGetLog.alert = alert.slice();
 }
 
 //This handles the creation of embeds for new fissures
 function WGFissure(data){
-	var fissure = [];
-	var fisBool = false;
+	//define the alert id list and the check value for a new notification
+	let fissure = [];
+	let fisBool = false;
+	//initiate and set up the discord embed output
 	const embed = new Discord.RichEmbed();
 	embed.setTitle("New Fissures have Opened");
 	embed.setColor(0xffff00);
-	for(var i = 0; i < data.fissures.length; i++){
-		var fissureNode = data.fissures[i];
+	//loop through the fissure list
+	for(let i = 0; i < data.fissures.length; i++){
+		let fissureNode = data.fissures[i];
+		//check if there is a new fissure
 		if(wGetLog.fissure.indexOf(fissureNode.id) == -1){
 			fisBool = true;
 			fissure.push(fissureNode.id);
@@ -543,23 +554,30 @@ function WGFissure(data){
 		}else{
 			fissure.push(fissureNode.id);
 		}
-	}if(fisBool == true){
+	}
+	//check if there is a new fissure and push the embed
+	if(fisBool == true){
 		botChan.send(getRole(config.botRoleMess[2]) + "");
 		botChan.send(embed);
 	}
+	//update the fissure list with the new list
 	wGetLog.fissure = fissure.slice();
 }
 
 //This Handles notification and listing of Baro Ki'teer and his inventory
 function WGBaro(data){
+	//check if baro was here last tick
 	if(baro == false){
+		//if he wasn't check if he is now here
 		if(data.voidTrader.active == true){
 			baro = true;
+			//set up the baro embed
 			const embed = new Discord.RichEmbed();
 			embed.setTitle("Baro Ki'teer's inventory");
 			embed.setColor(0x63738c);
-			var baroInv = data.voidTrader.inventory;
-			for(var i = 0; i < baroInv.length; i++){
+			let baroInv = data.voidTrader.inventory;
+			//loop through baros inventory
+			for(let i = 0; i < baroInv.length; i++){
 				embed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + 
 					" Credits: " + baroInv[i].credits);
 			}
@@ -567,10 +585,10 @@ function WGBaro(data){
 			anonChan.send(embed);
 			//console.log(baroInv);
 		
-		}else{
-			if(data.voidTrader.active == false){
-				baro = false;
-			}
+		}
+	}else{
+		if(data.voidTrader.active == false){
+			baro = false;
 		}
 	}
 }
