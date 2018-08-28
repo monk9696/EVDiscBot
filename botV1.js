@@ -254,72 +254,106 @@ bot.on('message', (message) =>{
 			file.writeWeapFile(weaponList,message);
 			break;
 		case "list"://list the weapons currently with a build in the system
+			//pull the names of all the weapons into list
 			let list = Object.keys(weaponList);
+			//check if there are any weapons in the list
 			if(list.length >= 1){
+				//create the output string
 				let out = "";
+				//loop through the list
 				for(let name of list){
+					//append the weapon to the list
 					out += name + ", ";
+					//check for the char limit of discord with extra space
 					if(out.length >= 1500){
+						//output the list and re-assign the output string as new
 						message.channel.send(out);
 						out = "";
 					}
 				}
+				//out put the last string in the list
 				message.channel.send(out);
 			} else {
 				message.reply("No stored Weapons");
 			}
 			break;
 		case "edit"://allows editing of the desctiption of a weapon build requires admin status
+			//check if the user is at an admin level
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
+			//check if all the args are present
 			if(!args[2])
 			{
 				message.channel.send("You are missing parameters, please see !help for information")
 				break;
 			}
+			//check if the weapin exists in the list
 			if(!weaponList[args[0]]){
 				message.reply(args[0] + " does not exist in the database");
 				break;
 			}
-
+			//check if the build selected is a valid build
+			if(!weaponList[args[0]][(args[1]-1)]){
+				message.reply("The selected weapon does not have " + args[1] + " different builds please select within the bounds of the number of builds");
+				message.reply(args[0] + " has " + weaponList[args[0]].length + " builds");
+				break;
+			}
+			//take in the new description for the weapon
 			var description = "";
 			for(var i = 2; i < args.length; i++){
 				description += args[i] + " ";
 			}
+			//assigns the description to the weapon build
 			weaponList[args[0]][(args[1]-1)].Descrip = description;
 			file.writeWeapFile(weaponList,message);
 			break;
 		case "delete"://allow deletion of a build requires admin status
+			//checks for the admin level role
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
+			//checks if you input a number for the build
 			if (args[1] == undefined){
+				//check if the weapon exists
 				if (weaponList[args[0]]){
+					//delete the weapon and all the builds from the list
 					message.channel.send(args[0] + " deleted");
 					delete weaponList[args[0]];
 					weaponList.delete(args[0]);
 				}
+			//check if the build is within the bounds
 			} else if (weaponList[args[0]] && weaponList[args[0]].length >= args[1]){
+				//checks if it is the last build for the weapon
 				if (weaponList[args[0]].length >= 1){
+					//removes the build from the weapon in the list
 					weaponList[args[0]].splice((args[1] - 1), 1);
 				} else {
+					//deletes the weapon since there are no more builds left
 					delete weaponList[args[0]];
 					weaponList.delete(args[0]);
 				}
+			//default incase the weapon or build number does not exist
 			} else {
 				message.reply("Either the weapon does not exist or does not have " + args[1] + " builds");
 			}
+			//updates the load file
 			file.writeWeapFile(weaponList,message);
 			break;
 		case "get"://allows retrival of multiple builds from the system
+			//checks if there is a weapon in the input
 			if (args[0]){
+				//loop through all the weapons listed
 				for (var j = 0; j < args.length; j++){
+					//checks if the weapon exists in the system
 					if (weaponList[args[j]]){
+						//checks incase the weapoin has no builds
 						if (weaponList[args[j]][0]){
+							//print out the base info
 							message.channel.send(args[j] + ": Required MR: " + weaponList[args[j]][0].MR);
+							//loops through all the build info
 							for(var i = 0; i < weaponList[args[j]].length; i++){
 								message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + ", Burst DPS: " + weaponList[args[j]][i].Burst + ", Status Chance: " + weaponList[args[j]][i].Status + "\n" + weaponList[args[j]][i].Link);
 							}
@@ -333,13 +367,16 @@ bot.on('message', (message) =>{
 			} else {
 				message.reply("You must list some weapon for this command"); 
 			}
+			//confirms when all builds are retrieved
 			message.channel.send("Done");
 			break;
 		case "request"://adds to a list of requested weapons builds by your community
+			//checks if there is a weapon requested
 			if(args[0] == undefined){
 				message.reply("You need to add a weapon to request");
 				break;
 			}
+			//adds all the weapons to the requested list
 			for(var i = 0; i < args.length; i++){
 				if(neededWeapons.indexOf(args[i]) == -1){
 					neededWeapons.push(args[i]);
@@ -348,38 +385,47 @@ bot.on('message', (message) =>{
 					message.channel.send(args[i] + " already exists");
 				}
 			}
+			//updates the file
 			file.writeReqFile(neededWeapons, message);
 			break;
 		case "get_request"://returns the list of requested builds
+			//checks if there are any weapons requested
 			if(neededWeapons.length == 0){
 				message.channel.send("No requested builds");
 				break;
 			}
+			// creates the output string and lists all of the weapons in the requested que
 			var out = "";
 			for(var name of neededWeapons){
 				out += name + ", ";
 				console.log(out.length);
+				//confirms the char limit of discord with a buffer area
 				if(out.length >= 1500){
 					message.channel.send(out);
 					out = "";
 				}
 			}
+			//outputs the final message of requested weapons
 			if(out !== ""){
 				message.channel.send(out);
 			}
 			break;
 		case "clear_request"://allows removal of the request list or to clear the whole list requires admin status
+			//checks for admin role
 			if(!role){
 				message.reply("You do not have the proper role for this command");
 				break;
 			}
+			//checks if there are any specific weapons to remove
 			if(!args[0]){
+				//clears the whole requested list of any weapons
 				delete neededWeapons;
 				neededWeapons = [];
 				message.reply("Requests have been cleared");
 				file.writeReqFile(neededWeapons, message);
 				break;
 			}
+			//removes only the selected weapons from the request list
 			for(var i of args){
 				var loc = neededWeapons.indexOf(i)
 				if(loc > -1){
@@ -407,20 +453,31 @@ bot.login(config.token);
 //Function to load in the data from the Warframe API
 async function warGet(){
 	//console.log("WarGet");
+	//fetch the data from the pc warframe status
 	fetch("https://ws.warframestat.us/pc")
+		//parses the api into json form for easy access
 		.then((resp) => resp.json())
+			//pass in the json object for notification
 			.then(function(data){
-				WGCetus(data);
-				WGAlert(data);
-				WGFissure(data);
-				WGBaro(data);
-				WGNews(data);
-			}).then(rep => {file.writeWGet(wGetLog)});	
+				//WGCetus(data);
+				//WGAlert(data);
+				//WGFissure(data);
+				//WGBaro(data);
+				//WGNews(data);
+			})
+				//update the json for the cached id's to streamline relauching the bot to reduce notifications
+				.then(rep => {file.writeWGet(wGetLog)});	
 }
+
+
+//functions to check to reweite for simplification
+//cetus,news 
+//comment: all
+
 
 //This handles the request for cetus time changes
 function WGCetus(data){
-	var temp = cetus[0];
+	let temp = cetus[0];
 	cetus[0] = data.cetusCycle.isDay;
 	cetus[1] = data.cetusCycle.shortString;
 	if(temp != cetus[0]){
