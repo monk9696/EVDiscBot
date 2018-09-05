@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 
 //Config for specific constants that are user based
 const config = require("./auth.json");
+const weap = require("./weap.json");
 var wGetLog = require("./WGet.json");
 
 //Filesystem to store relevant data to the proper files
@@ -22,7 +23,6 @@ const fetch = require('node-fetch')
 var cetus = [null,""];
 var baro = false;
 // storage variables for the data that gets stored
-var neededWeapons = [];
 var weaponList = new Map();
 
 //current universal role declaration to define the user as admin
@@ -33,17 +33,18 @@ var botRole;
 
 //What the bot does on startup
 bot.on("ready", () => {
+
 	
 	//sets up the main guild for the bot
 	botGuild = bot.guilds.find('name', config.mainGuild);
 	//declares a main testing role
 	botRole = getRole(config.botRoleMess[0]);
-	
 
 	//Seting the playing text for the bot
 	bot.user.setActivity("Sacrificing Goats");
+
 	//Reads in the files into variables (going to set up proper jsons and includes later)
-	file.readFile(weaponList, neededWeapons);
+	file.readWeapFile(weaponList, weap);
 	
 	//Defines text-channels for certain bot outputs
 	//botchannel
@@ -93,6 +94,9 @@ bot.on('message', (message) =>{
 
 	//Switch statement fo handling all cases based off the first term
 	switch(litteral){
+		case "temp":
+				message.channel.send("This command does not exist");
+			break;
 		case "help"://help command for explaining what a comand does
 			switch(args[0]){
 				case "help":
@@ -251,7 +255,7 @@ bot.on('message', (message) =>{
 			}
 			//confirm that it is added and will save the new weapon set to the list
 			message.channel.send(args[0] + " added to the list");
-			file.writeWeapFile(weaponList,message);
+			file.weaponOutput(weaponList);
 			break;
 		case "list"://list the weapons currently with a build in the system
 			//pull the names of all the weapons into list
@@ -290,7 +294,7 @@ bot.on('message', (message) =>{
 				break;
 			}
 			//check if the weapin exists in the list
-			if(!weaponList[args[0]]){
+			if(!weaponList[args[0]] || args[0] == "request"){
 				message.reply(args[0] + " does not exist in the database");
 				break;
 			}
@@ -301,18 +305,23 @@ bot.on('message', (message) =>{
 				break;
 			}
 			//take in the new description for the weapon
-			var description = "";
-			for(var i = 2; i < args.length; i++){
+			let description = "";
+			for(let i = 2; i < args.length; i++){
 				description += args[i] + " ";
 			}
 			//assigns the description to the weapon build
 			weaponList[args[0]][(args[1]-1)].Descrip = description;
-			file.writeWeapFile(weaponList,message);
+			file.weaponOutput(weaponList);
 			break;
 		case "delete"://allow deletion of a build requires admin status
 			//checks for the admin level role
 			if(!role){
 				message.reply("You do not have the proper role for this command");
+				break;
+			}
+			if (args[0] == "request")
+			{
+				message.channel.send("Request is not a valid weapon to remove");
 				break;
 			}
 			//checks if you input a number for the build
@@ -340,13 +349,13 @@ bot.on('message', (message) =>{
 				message.reply("Either the weapon does not exist or does not have " + args[1] + " builds");
 			}
 			//updates the load file
-			file.writeWeapFile(weaponList,message);
+			file.weaponOutput(weaponList);
 			break;
 		case "get"://allows retrival of multiple builds from the system
 			//checks if there is a weapon in the input
-			if (args[0]){
+			if (args[0] && args[0] != "request"){
 				//loop through all the weapons listed
-				for (var j = 0; j < args.length; j++){
+				for (let j = 0; j < args.length; j++){
 					//checks if the weapon exists in the system
 					if (weaponList[args[j]]){
 						//checks incase the weapoin has no builds
@@ -354,7 +363,7 @@ bot.on('message', (message) =>{
 							//print out the base info
 							message.channel.send(args[j] + ": Required MR: " + weaponList[args[j]][0].MR);
 							//loops through all the build info
-							for(var i = 0; i < weaponList[args[j]].length; i++){
+							for(let i = 0; i < weaponList[args[j]].length; i++){
 								message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + ", Burst DPS: " + weaponList[args[j]][i].Burst + ", Status Chance: " + weaponList[args[j]][i].Status + "\n" + weaponList[args[j]][i].Link);
 							}
 						} else {
@@ -377,26 +386,26 @@ bot.on('message', (message) =>{
 				break;
 			}
 			//adds all the weapons to the requested list
-			for(var i = 0; i < args.length; i++){
-				if(neededWeapons.indexOf(args[i]) == -1){
-					neededWeapons.push(args[i]);
+			for(let i = 0; i < args.length; i++){
+				if(weaponList["request"].indexOf(args[i]) == -1){
+					weaponList["request"].push(args[i]);
 					message.channel.send(args[i] + " added to the request list");
 				} else {
 					message.channel.send(args[i] + " already exists");
 				}
 			}
 			//updates the file
-			file.writeReqFile(neededWeapons, message);
+			file.weaponOutput(weaponList);
 			break;
 		case "get_request"://returns the list of requested builds
 			//checks if there are any weapons requested
-			if(neededWeapons.length == 0){
+			if(weaponList["request"].length == 0){
 				message.channel.send("No requested builds");
 				break;
 			}
 			// creates the output string and lists all of the weapons in the requested que
-			var out = "";
-			for(var name of neededWeapons){
+			let out = "";
+			for(let name of weaponList["request"]){
 				out += name + ", ";
 				console.log(out.length);
 				//confirms the char limit of discord with a buffer area
@@ -419,21 +428,20 @@ bot.on('message', (message) =>{
 			//checks if there are any specific weapons to remove
 			if(!args[0]){
 				//clears the whole requested list of any weapons
-				delete neededWeapons;
-				neededWeapons = [];
+				weaponList["request"] = [];
 				message.reply("Requests have been cleared");
-				file.writeReqFile(neededWeapons, message);
-				break;
 			}
 			//removes only the selected weapons from the request list
-			for(var i of args){
-				var loc = neededWeapons.indexOf(i)
-				if(loc > -1){
-					message.channel.send(i + " removed");
-					neededWeapons.splice(loc,1);
+			else{ 
+				for(let i of args){
+					let loc = neededWeapons.indexOf(i)
+					if(loc > -1){
+						message.channel.send(i + " removed");
+						neededWeapons.splice(loc,1);
+					}
 				}
 			}
-			file.writeReqFile(neededWeapons, message);
+			file.weaponOutput(weaponList);
 			break;
 		default: //default responce when no command path is reached
 			message.reply(litteral + " is not a valid command check your spelling");
@@ -454,9 +462,9 @@ bot.login(config.token);
 async function warGet(){
 	//console.log("WarGet");
 	//fetch the data from the pc warframe status
-	fetch("https://ws.warframestat.us/pc")
+	fetch("https://ws.warframestat.us/pc").catch(e=> console.log(e))
 		//parses the api into json form for easy access
-		.then((resp) => resp.json())
+		.then((wfWorldData) => wfWorldData.json())
 			//pass in the json object for notification
 			.then(function(data){
 			//	WGCetus(data);
@@ -466,7 +474,7 @@ async function warGet(){
 			//	WGNews(data);
 			})
 				//update the json for the cached id's to streamline relauching the bot to reduce notifications
-				.then(rep => {file.writeWGet(wGetLog)});	
+				.then(check => {file.writeWGet(wGetLog)});	
 }
 
 
