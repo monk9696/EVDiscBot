@@ -14,6 +14,17 @@ const file = new fs();
 const bot = new Discord.Client();
 var botChan;
 var anonChan;
+var stat = require("./stat.json");
+
+if(stat.alert == null){
+	stat = {
+		alert:[],
+		fiss:[],
+		news:[],
+	};
+}
+
+
 
 //Defines the message for the role selection
 	//var roleMess = config.roleMessage;
@@ -462,19 +473,24 @@ bot.login(config.token);
 async function warGet(){
 	//console.log("WarGet");
 	//fetch the data from the pc warframe status
-	fetch("https://ws.warframestat.us/pc").catch(e=> console.log(e))
+	fetch("https://ws.warframestat.us/pc").catch(e=> {
+		console.log(e + " Failed to Fetch");})
 		//parses the api into json form for easy access
-		.then((wfWorldData) => wfWorldData.json())
+		.then((wfWorldData) => wfWorldData.json()).catch((e,wfWorldData)=>{
+			console.log(wfWorldData);
+			console.log(e + " Failed Parsing");})
 			//pass in the json object for notification
-			.then(function(data){
-			//	WGCetus(data);
-			//	WGAlert(data);
-			//	WGFissure(data);
-			//	WGBaro(data);
-			//	WGNews(data);
+			.then(data=>{
+				WGCetus(data);
+				WGAlert(data);
+				WGFissure(data);
+				WGBaro(data);
+				WGNews(data);
 			})
-				//update the json for the cached id's to streamline relauching the bot to reduce notifications
-				.then(check => {file.writeWGet(wGetLog)});	
+			.catch((e,data)=> console.log(e + " Failed to run warGet functions" + data))
+			//update the json for the cached id's to streamline relauching the bot to reduce notifications
+			.then(check => {file.writeWGet(wGetLog); file.statOutput(stat);})
+			.catch(e=> console.log(e + " Failed to update log"));	
 }
 
 
@@ -523,8 +539,8 @@ function WGAlert(data){
 				"-" + alertNode.mission.maxEnemyLevel +
 				"\nNightmare Mission: " + alertNode.mission.nightmare +
 				"\nArchwing: " + alertNode.mission.archwingRequired
-				
 			);
+			stat.alert.push(alertNode);
 		}else{
 			alert.push(alertNode.id);
 		}
@@ -554,11 +570,12 @@ function WGFissure(data){
 			fisBool = true;
 			fissure.push(fissureNode.id);
 			embed.addField( fissureNode.node,
-						"Mission Type: " + fissureNode.missionType + 
-						"\nEnemy Faction: " + fissureNode.enemy + 
-						"\nFissure Teir: " + fissureNode.tier + 
-						"\nTime Until Collapse: " + fissureNode.eta);
-
+				"Mission Type: " + fissureNode.missionType + 
+				"\nEnemy Faction: " + fissureNode.enemy + 
+				"\nFissure Teir: " + fissureNode.tier + 
+				"\nTime Until Collapse: " + fissureNode.eta
+			);
+			stat.fiss.push(fissureNode);
 		}else{
 			fissure.push(fissureNode.id);
 		}
@@ -618,6 +635,7 @@ function WGNews(data){
 						"\nFourm Link: " + newsNode.link);
 				}
 			}
+			stat.news.push(newsNode);
 		}else{
 			news.push(newsNode.id);
 		}

@@ -32,6 +32,14 @@ class fileWrite{
 		})
 	}
 
+	statOutput(data){
+		let output = JSON.stringify(data, null, 2);
+		fs.writeFile(config.fileWrite[2], output, (err) => {
+			if(err) throw err;
+			//console.log("weapon saver");
+		})
+	}
+
 	writeWGet(data){
 		let output = JSON.stringify(data, null, 2);
 		fs.writeFile(config.fileWrite[0], output, (err)=> {
