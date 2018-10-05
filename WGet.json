@@ -1,5 +1,25 @@
 {
-  "news": [],
-  "alert": [],
-  "fissure": []
+  "news": [
+    "5b918a9757904a1a5421dfd2",
+    "5baa770c3f8d4a3feb648a95",
+    "5baa79e957904a11a1480555",
+    "5bad12ef3f8d4a9f58010645",
+    "5bae5e503f8d4a4e43405975",
+    "5bb60ad63f8d4a55db78c594"
+  ],
+  "alert": [
+    "5bb76f197410978d10bbbc40",
+    "5bb771aca93512a983037db0",
+    "5bb774b6613a691f458714dd",
+    "5bb7770dee415f839a345079",
+    "5bb779dda2475d3f1ea39cc0"
+  ],
+  "fissure": [
+    "5bb62551d53ae3f38c406fae",
+    "5bb62821217d5d0fedf281dc",
+    "5bb62a7addd36fd7a4c2a83f",
+    "5bb631451951a7966a4304d8",
+    "5bb631451951a7966a4304d9",
+    "5bb631451951a7966a4304da"
+  ]
 }

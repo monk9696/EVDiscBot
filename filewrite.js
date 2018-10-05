@@ -40,6 +40,14 @@ class fileWrite{
 		})
 	}
 
+	configUpdate(data){
+		let output = JSON.stringify(data, null, 1);
+		fs.writeFile("auth.json", output, (err) => {
+			if(err) throw err;
+			//console.log("weapon saver");
+		})
+	}
+
 	writeWGet(data){
 		let output = JSON.stringify(data, null, 2);
 		fs.writeFile(config.fileWrite[0], output, (err)=> {

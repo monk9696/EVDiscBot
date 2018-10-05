@@ -2,9 +2,11 @@
 const Discord = require('discord.js');
 
 //Config for specific constants that are user based
-const config = require("./auth.json");
+let config = require("./auth.json");
 const weap = require("./weap.json");
 var wGetLog = require("./WGet.json");
+
+//const emoji = require("./emoji.json");
 
 //Filesystem to store relevant data to the proper files
 const fs = require("./filewrite.js");
@@ -27,7 +29,7 @@ if(stat.alert == null){
 
 
 //Defines the message for the role selection
-	//var roleMess = config.roleMessage;
+//var roleMess = config.roleMessage;
 
 //parse the Warframe Data
 const fetch = require('node-fetch')
@@ -44,8 +46,6 @@ var botRole;
 
 //What the bot does on startup
 bot.on("ready", () => {
-
-	
 	//sets up the main guild for the bot
 	botGuild = bot.guilds.find('name', config.mainGuild);
 	//declares a main testing role
@@ -63,11 +63,11 @@ bot.on("ready", () => {
 	//announcements
 	anonChan = botGuild.channels.find("name",config.channel[1]);
 	
-
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
 	//set up for the auto role selection
-		//roleMess = roleSet(roleMess);
+	//roleMess = roleSet(roleMess);
+	
 });
 
 //when a message is sent in any channel it is apart of this line will execute
@@ -119,9 +119,9 @@ bot.on('message', (message) =>{
 				case "role":
 					message.channel.send("This Command states if your current role has access to all viable commands");
 					break;
-					/*case "roleFix":
+					case "roleFix":
 					message.channel.send("This command will fix the roles for all reaction that want to gain or lose a specific role");					
-					break;*/
+					break;
 				case "roll":
 					message.channel.send("This command can be used to roll a dice of a specified size, !roll [number] if you leave number empty it will default to 6");
 					break;
@@ -169,7 +169,7 @@ bot.on('message', (message) =>{
 		case "role"://command to check if the user has an admin role
 			message.reply("your role value is " + role);
 			break;
-			/*case "roleFix"://command to triger the automatic setting of roles using reactions and the roleSet function.
+		/*case "roleFix"://command to triger the automatic setting of roles using reactions and the roleSet function.
 			//Call Upon the role Message when found
 			roleMess.then(l=>{
 				//Generate the List of emoji's as an array
@@ -181,13 +181,26 @@ bot.on('message', (message) =>{
 						for(let j = 0; j < pepes.length; j++){
 							//Accept only non-bot users
 							if (!pepes[j].bot){
+								//Identify the user as a guild member object
+								let mem = botGuild.fetchMember(pepes[j]).then(memb=>{
+									return memb;
+								});
 								//based of each emoji for the reaction
-								switch(emojArr[i].emoji.name){
-									case "😀" :
-										//Identify the user as a guild member object
-										let mem = botGuild.fetchMember(pepes[j]).then(memb=>{
-											return memb;
-										});
+								switch(emojArr[i].emoji){
+									case getEmoji(emoji.emoji[0]) :
+										//Once the guild member is recieved
+										mem.then(l=> {
+											//Identify if they have the role for said member
+											if(l.roles.array().includes(getRole(config.botRoleMess[2]))){
+												//remove the role if they have it
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleMess[2]))});
+											}else{
+												//add's the role if they don't have it
+												mem.then(memb => {memb.addRole(getRole(config.botRoleMess[2]))});
+											}
+										})
+										break;
+									case getEmoji(emoji.emoji[1]) :
 										//Once the guild member is recieved
 										mem.then(l=> {
 											//Identify if they have the role for said member
@@ -476,27 +489,23 @@ async function warGet(){
 	fetch("https://ws.warframestat.us/pc").catch(e=> {
 		console.log(e + " Failed to Fetch");})
 		//parses the api into json form for easy access
-		.then((wfWorldData) => wfWorldData.json()).catch((e,wfWorldData)=>{
-			console.log(wfWorldData);
+		.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
 			console.log(e + " Failed Parsing");})
 			//pass in the json object for notification
 			.then(data=>{
-				WGCetus(data);
-				WGAlert(data);
-				WGFissure(data);
-				WGBaro(data);
-				WGNews(data);
+				//WGCetus(data);
+				//WGAlert(data);
+				//WGFissure(data);
+				//WGBaro(data);
+				//WGNews(data);
 			})
-			.catch((e,data)=> console.log(e + " Failed to run warGet functions" + data))
+			.catch(e=> console.log(e + " Failed to run warGet functions"))
 			//update the json for the cached id's to streamline relauching the bot to reduce notifications
-			.then(check => {file.writeWGet(wGetLog); file.statOutput(stat);})
-			.catch(e=> console.log(e + " Failed to update log"));	
+				.then(check => {file.writeWGet(wGetLog); file.statOutput(stat);})
+				.catch(e=> console.log(e + " Failed to update log"));	
 }
-
-
 //functions to check to reweite for simplification
 //news 
-
 
 //This handles the request for cetus time changes
 function WGCetus(data){
@@ -597,17 +606,25 @@ function WGBaro(data){
 		if(data.voidTrader.active == true){
 			baro = true;
 			//set up the baro embed
-			const embed = new Discord.RichEmbed();
-			embed.setTitle("Baro Ki'teer's inventory");
-			embed.setColor(0x63738c);
+			let workEmbed = new Discord.RichEmbed();
+			workEmbed.setTitle("Baro Ki'teer's inventory");
+			workEmbed.setColor(0x63738c);
 			let baroInv = data.voidTrader.inventory;
+			let embed = [];
 			//loop through baros inventory
 			for(let i = 0; i < baroInv.length; i++){
-				embed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + 
+				if(i%20 == 0 && i != 0){
+					embed.push(workEmbed);
+					workEmbed = new Discord.RichEmbed();
+					workEmbed.setTitle("Baro Ki'teer's inventory");
+					workEmbed.setColor(0x63738c);
+				}
+				workEmbed.addField(baroInv[i].item, "Ducuts: " + baroInv[i].ducats + 
 					" Credits: " + baroInv[i].credits);
 			}
+			embed.push(workEmbed);
 			anonChan.send("@everyone Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
-			anonChan.send(embed);
+			embed.forEach((j)=>{anonChan.send(j)});
 			//console.log(baroInv);
 		
 		}
@@ -647,10 +664,15 @@ function WGNews(data){
 function getRole(string){
 	return (botGuild.roles.find('name', string));
 }
-/*
+
+
+function getEmoji(string){
+	return botGuild.emojis.get(string);
+}
+
 //Create or find the role setting message and will add the specified reactions to the message
 //take in the message ID and return the message object, This simplifies storing and finding
-function roleSet(message){
+/*function roleSet(message){
 	if(message == null){
 		botChan.send("this is a new message");
 		message = botChan.fetchMessages({limit: 1})
@@ -658,19 +680,26 @@ function roleSet(message){
 				return value.first()
 			});
 		message.then(l=> {
-			l.edit('React with a 🌕 to gain or lose the Fissure role\n\nReact with 😀 to gain or lose the Alert role\n\nWhen you are ready send !roleFix in ' + config.channel[1]);
+			l.edit("React with a " 
+				+ getEmoji(emoji.emoji[0]) + " to gain or lose the Fissure role\n\nReact with " 
+				+ getEmoji(emoji.emoji[1]) + ' to gain or lose the Speedy role\n\nWhen you are ready send !roleFix in ' + config.channel[0]);
 		});
 	}else{
 		message = botChan.fetchMessage(message)
 			.then(value => {
 				return value;
-			})
+			}).catch(e => {
+				//console.log(e);
+				return roleSet(null);
+			});
 	}
 	message.then(async(message) =>{
-		await message.react('🌕');
-		await message.react('😀');
+		await message.react(getEmoji(emoji.emoji[0]));
+		await message.react(getEmoji(emoji.emoji[1]));
+		//console.log(message);
+		config.roleMessage = message.id;
+		file.configUpdate(config);
 	});
-
 	return message;
 }
 */
