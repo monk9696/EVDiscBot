@@ -67,7 +67,7 @@ bot.on("ready", () => {
 	bot.user.setActivity("Sacrificing Goats");
 	//#remove
 	//Reads in the files into variables (going to set up proper jsons and includes later)
-	//file.readWeapFile(weaponList, weap);
+	file.readWeapFile(weaponList, weap);
 	
 	//Defines text-channels for certain bot outputs
 	//botchannel
