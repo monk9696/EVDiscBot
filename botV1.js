@@ -4,9 +4,7 @@ const Discord = require('discord.js');
 //Config for specific constants that are user based
 let config = require("./auth.json");
 const weap = require("./weap.json");
-var wGetLog = require("./WGet.json");
-
-//const emoji = require("./emoji.json");
+let wGetLog = require("./WGet.json");
 
 //Filesystem to store relevant data to the proper files
 const fs = require("./filewrite.js");
@@ -14,10 +12,18 @@ const file = new fs();
 
 //Instantiates the bot
 const bot = new Discord.Client();
-var botChan;
-var anonChan;
-var stat = require("./stat.json");
 
+//bot Channels
+let botChan;
+let anonChan;
+let permChan;
+
+
+//admin role so bot can dm when there is an issue or missing exception
+let adm;
+//Fissure alert Statistic collection
+let stat = require("./stat.json");
+//define stat if empty
 if(stat.alert == null){
 	stat = {
 		alert:[],
@@ -27,46 +33,55 @@ if(stat.alert == null){
 }
 
 
-
 //Defines the message for the role selection
-//var roleMess = config.roleMessage;
+let roleMess = config.roleMessage;
 
 //parse the Warframe Data
 const fetch = require('node-fetch')
-var cetus = [null,""];
-var baro = false;
+let cetus = [null,""];
+let baro = false;
+
 // storage variables for the data that gets stored
-var weaponList = new Map();
+let weaponList = new Map();
 
 //current universal role declaration to define the user as admin
-var role = false;
+let role = false;
 
-var botGuild;
-var botRole;
+//predefined variables for identifying the current guild
+let botGuild;
 
 //What the bot does on startup
 bot.on("ready", () => {
 	//sets up the main guild for the bot
 	botGuild = bot.guilds.find('name', config.mainGuild);
-	//declares a main testing role
-	botRole = getRole(config.botRoleMess[0]);
+	
+	//declares a main testing role ie dm target
+	botGuild.members.array().forEach(x=>{
+		//console.log(x.user.id);
+		if(x.user.id == config.botAdmin){
+			adm = x.user;
+		}
+	});
 
 	//Seting the playing text for the bot
 	bot.user.setActivity("Sacrificing Goats");
-
+	//#remove
 	//Reads in the files into variables (going to set up proper jsons and includes later)
-	file.readWeapFile(weaponList, weap);
+	//file.readWeapFile(weaponList, weap);
 	
 	//Defines text-channels for certain bot outputs
 	//botchannel
 	botChan = botGuild.channels.find("name",config.channel[0]);
 	//announcements
 	anonChan = botGuild.channels.find("name",config.channel[1]);
+	//permanant ie bot role messages
+	permChan = botGuild.channels.find("name",config.channel[2]);
+	
 	
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
 	//set up for the auto role selection
-	//roleMess = roleSet(roleMess);
+	roleMess = roleSet(roleMess);
 	
 });
 
@@ -79,7 +94,7 @@ bot.on('message', (message) =>{
 	}
 
 	//separate the initial term
-	var litteral = message.content;
+	let litteral = message.content;
 	//ignores all non commands inputs
 	if(litteral.indexOf(config.prefix) !== 0){
 		return;
@@ -99,7 +114,7 @@ bot.on('message', (message) =>{
 
 	//separates the arguments
 	litteral = litteral.slice(1);
-	var args = litteral.split(" ");
+	let args = litteral.split(" ");
 	litteral = args[0];
 	args.shift();
 
@@ -169,7 +184,7 @@ bot.on('message', (message) =>{
 		case "role"://command to check if the user has an admin role
 			message.reply("your role value is " + role);
 			break;
-		/*case "roleFix"://command to triger the automatic setting of roles using reactions and the roleSet function.
+		case "roleFix"://command to triger the automatic setting of roles using reactions and the roleSet function.
 			//Call Upon the role Message when found
 			roleMess.then(l=>{
 				//Generate the List of emoji's as an array
@@ -187,29 +202,94 @@ bot.on('message', (message) =>{
 								});
 								//based of each emoji for the reaction
 								switch(emojArr[i].emoji){
-									case getEmoji(emoji.emoji[0]) :
+									case getEmoji(config.emoji[0]) :
 										//Once the guild member is recieved
 										mem.then(l=> {
 											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleMess[2]))){
+											if(l.roles.array().includes(getRole(config.botRoleFissure[0]))){
 												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleMess[2]))});
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[0]))});
 											}else{
 												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleMess[2]))});
+												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[0]))});
 											}
 										})
 										break;
-									case getEmoji(emoji.emoji[1]) :
+									case getEmoji(config.emoji[1]) :
 										//Once the guild member is recieved
 										mem.then(l=> {
 											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleMess[3]))){
+											if(l.roles.array().includes(getRole(config.botRoleFissure[1]))){
 												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleMess[3]))});
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[1]))});
 											}else{
 												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleMess[3]))});
+												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[1]))});
+											}
+										})
+										break;
+									case getEmoji(config.emoji[2]) :
+										//Once the guild member is recieved
+										mem.then(l=> {
+											//Identify if they have the role for said member
+											if(l.roles.array().includes(getRole(config.botRoleFissure[2]))){
+												//remove the role if they have it
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[2]))});
+											}else{
+												//add's the role if they don't have it
+												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[2]))});
+											}
+										})
+										break;
+									case getEmoji(config.emoji[3]) :
+										//Once the guild member is recieved
+										mem.then(l=> {
+											//Identify if they have the role for said member
+											if(l.roles.array().includes(getRole(config.botRoleFissure[3]))){
+												//remove the role if they have it
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[3]))});
+											}else{
+												//add's the role if they don't have it
+												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[3]))});
+											}
+										})
+										break;
+									case getEmoji(config.emoji[4]) :
+										//Once the guild member is recieved
+										mem.then(l=> {
+											//Identify if they have the role for said member
+											if(l.roles.array().includes(getRole(config.botRoleFissure[4]))){
+												//remove the role if they have it
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[4]))});
+											}else{
+												//add's the role if they don't have it
+												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[4]))});
+											}
+										})
+										break;
+									case getEmoji(config.emoji[5]) :
+										//Once the guild member is recieved
+										mem.then(l=> {
+											//Identify if they have the role for said member
+											if(l.roles.array().includes(getRole(config.botRoleFissure[5]))){
+												//remove the role if they have it
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[5]))});
+											}else{
+												//add's the role if they don't have it
+												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[5]))});
+											}
+										})
+										break;
+									case getEmoji(config.emoji[6]) :
+										//Once the guild member is recieved
+										mem.then(l=> {
+											//Identify if they have the role for said member
+											if(l.roles.array().includes(getRole(config.botRoleFissure[6]))){
+												//remove the role if they have it
+												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[6]))});
+											}else{
+												//add's the role if they don't have it
+												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[6]))});
 											}
 										})
 										break;
@@ -234,7 +314,7 @@ bot.on('message', (message) =>{
 			roleMess.then(l=>{
 				roleSet(l.id);
 			});
-			break;*/
+			break;
 		case "roll"://rolls a die default 6 or based off input
 			//if it is acompanied by a number roll for that number
 			if(typeof args[0] == "number")
@@ -495,7 +575,7 @@ async function warGet(){
 			.then(data=>{
 				//WGCetus(data);
 				//WGAlert(data);
-				//WGFissure(data);
+				WGFissure(data);
 				//WGBaro(data);
 				//WGNews(data);
 			})
@@ -555,7 +635,7 @@ function WGAlert(data){
 		}
 	//check if a new embed is going to be pushed and push it
 	}if(alertBool == true){
-		botChan.send(getRole(config.botRoleMess[3]) + "");
+		botChan.send(getRole(config.botRoleMess[2]) + "");
 		botChan.send(embed);
 	}
 	//update the alert list since there is a new alert
@@ -566,6 +646,8 @@ function WGAlert(data){
 function WGFissure(data){
 	//define the alert id list and the check value for a new notification
 	let fissure = [];
+	let fissureNot = [getRole(config.botRoleFissure[0])];
+	//console.log(fissureNot);
 	let fisBool = false;
 	//initiate and set up the discord embed output
 	const embed = new Discord.RichEmbed();
@@ -584,6 +666,7 @@ function WGFissure(data){
 				"\nFissure Teir: " + fissureNode.tier + 
 				"\nTime Until Collapse: " + fissureNode.eta
 			);
+			fissRole(fissureNot, fissureNode);
 			stat.fiss.push(fissureNode);
 		}else{
 			fissure.push(fissureNode.id);
@@ -591,7 +674,11 @@ function WGFissure(data){
 	}
 	//check if there is a new fissure and push the embed
 	if(fisBool == true){
-		botChan.send(getRole(config.botRoleMess[2]) + "");
+		let string = "";
+		//console.log(fissureNot);
+		fissureNot.forEach(x=> string = string + x + " ");
+		//console.log(string);
+		botChan.send(string);
 		botChan.send(embed);
 	}
 	//update the fissure list with the new list
@@ -672,20 +759,27 @@ function getEmoji(string){
 
 //Create or find the role setting message and will add the specified reactions to the message
 //take in the message ID and return the message object, This simplifies storing and finding
-/*function roleSet(message){
+function roleSet(message){
 	if(message == null){
-		botChan.send("this is a new message");
-		message = botChan.fetchMessages({limit: 1})
+		permChan.send("this is a new message");
+		console.log("Role Set message created");
+		message = permChan.fetchMessages({limit: 1})
 			.then(function(value){
 				return value.first()
 			});
 		message.then(l=> {
 			l.edit("React with a " 
-				+ getEmoji(emoji.emoji[0]) + " to gain or lose the Fissure role\n\nReact with " 
-				+ getEmoji(emoji.emoji[1]) + ' to gain or lose the Speedy role\n\nWhen you are ready send !roleFix in ' + config.channel[0]);
+				+ getEmoji(config.emoji[0]) + " to gain or lose the Fissure role\nReact with " 
+				+ getEmoji(config.emoji[1]) + ' to gain or lose the Lith role\nReact with '
+				+ getEmoji(config.emoji[2]) + " to gain or lose the Meso role\nReact with "
+				+ getEmoji(config.emoji[3]) + " to gain or lose the Neo role\nReact with "
+				+ getEmoji(config.emoji[4]) + " to gain or lose the Axi role\nReact with "
+				+ getEmoji(config.emoji[5]) + " to gain or lose the Endurance role\nReact with "
+				+ getEmoji(config.emoji[6]) + " to gain or lose the Quick role\nReact with "
+				+ 'When you are ready send !roleFix in ' + config.channel[0]);
 		});
 	}else{
-		message = botChan.fetchMessage(message)
+		message = permChan.fetchMessage(message)
 			.then(value => {
 				return value;
 			}).catch(e => {
@@ -694,12 +788,86 @@ function getEmoji(string){
 			});
 	}
 	message.then(async(message) =>{
-		await message.react(getEmoji(emoji.emoji[0]));
-		await message.react(getEmoji(emoji.emoji[1]));
+		await message.react(getEmoji(config.emoji[0]));
+		await message.react(getEmoji(config.emoji[1]));
+		await message.react(getEmoji(config.emoji[2]));
+		await message.react(getEmoji(config.emoji[3]));
+		await message.react(getEmoji(config.emoji[4]));
+		await message.react(getEmoji(config.emoji[5]));
+		await message.react(getEmoji(config.emoji[6]));
 		//console.log(message);
 		config.roleMessage = message.id;
 		file.configUpdate(config);
 	});
 	return message;
 }
-*/
+
+function fissRole(fissureNot, fissureNode){
+	getFissRole(fissureNode).forEach((x)=>{
+		if(!fissureNot.some((y)=> getRole(config.botRoleFissure[x]).name == y.name)){
+			fissureNot.push(getRole(config.botRoleFissure[x]));
+		}
+	});
+}
+
+function getFissRole(fissNode){
+	//parse fiss node for our fissure list
+	let output = [0];
+
+	//fissure tier
+	switch(fissNode.tier){
+		//lith
+		case "Lith":
+			output.push(1);
+			break;
+		//meso
+		case "Meso":
+			output.push(2);
+			break;
+		//neo
+		case "Neo":
+			output.push(3);
+			break;
+		//axi
+		case "Axi":
+			output.push(4);
+			break;
+		default:
+			adm.createDM().then(x=> x.send(fissNode.tier + " Does not have a Teir"));
+			break;
+	}
+	//endurance speed
+	switch(fissNode.missionType){
+		case "Defense":
+		case "Survival":
+		case "Excavation":
+		case "Interception":
+			output.push(5);
+			break;
+		case "Spy":
+		case "Exterminate":
+		case "Capture":
+			output.push(6);
+			break;
+		case "Mobile Defense":
+		case "Sabotage":
+			break;
+		default:
+			adm.createDM().then(x=> x.send(fissNode.missionType + " does not have a applicable mission tag"));
+			break;
+	}
+
+	//warlord Pick
+	/*Scrapped for confussing message output
+	switch(fissNode.node){
+		case "Mot (Void)":
+			output.push(7);
+			break;
+		default:
+			//then the node is not deamed by the warlords
+			break;
+	}*/
+	
+	return output;
+}
+
