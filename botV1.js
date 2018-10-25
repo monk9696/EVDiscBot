@@ -847,6 +847,7 @@ function getFissRole(fissNode){
 		case "Spy":
 		case "Exterminate":
 		case "Capture":
+		case "Rescue":
 			output.push(6);
 			break;
 		case "Mobile Defense":
