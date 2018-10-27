@@ -16,6 +16,7 @@ const bot = new Discord.Client();
 //bot Channels
 let botChan;
 let anonChan;
+let noteChan;
 let permChan;
 
 
@@ -72,10 +73,12 @@ bot.on("ready", () => {
 	//Defines text-channels for certain bot outputs
 	//botchannel
 	botChan = botGuild.channels.find("name",config.channel[0]);
-	//announcements
-	anonChan = botGuild.channels.find("name",config.channel[1]);
 	//permanant ie bot role messages
-	permChan = botGuild.channels.find("name",config.channel[2]);
+	permChan = botGuild.channels.find("name",config.channel[1]);
+	//announcements
+	anonChan = botGuild.channels.find("name",config.channel[2]);
+	//notification channel
+	noteChan = botGuild.channels.find("name",config.channel[3]);
 	
 	
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
@@ -573,11 +576,11 @@ async function warGet(){
 			console.log(e + " Failed Parsing");})
 			//pass in the json object for notification
 			.then(data=>{
-				//WGCetus(data);
-				//WGAlert(data);
+				WGCetus(data);
+				WGAlert(data);
 				WGFissure(data);
-				//WGBaro(data);
-				//WGNews(data);
+				WGBaro(data);
+				WGNews(data);
 			})
 			.catch(e=> console.log(e + " Failed to run warGet functions"))
 			//update the json for the cached id's to streamline relauching the bot to reduce notifications
@@ -594,9 +597,9 @@ function WGCetus(data){
 		//change the day night value
 		cetus[0] = data.cetusCycle.isDay;
 		if(cetus[0] == true){
-			botChan.send("Cetus has returned to day and the Eidolons have gone back into hiding");
+			noteChan.send("Cetus has returned to day and the Eidolons have gone back into hiding");
 		}else{
-			botChan.send("Night has befallen Cetus and the Eidolons have been agitated and must be stoped");	
+			noteChan.send("Night has befallen Cetus and the Eidolons have been agitated and must be stoped");	
 		}
 	}
 	//update the quick output for bot switch statement
@@ -635,8 +638,8 @@ function WGAlert(data){
 		}
 	//check if a new embed is going to be pushed and push it
 	}if(alertBool == true){
-		botChan.send(getRole(config.botRoleMess[2]) + "");
-		botChan.send(embed);
+		noteChan.send(getRole(config.botRoleMess[2]) + "");
+		noteChan.send(embed);
 	}
 	//update the alert list since there is a new alert
 	wGetLog.alert = alert.slice();
@@ -678,8 +681,8 @@ function WGFissure(data){
 		//console.log(fissureNot);
 		fissureNot.forEach(x=> string = string + x + " ");
 		//console.log(string);
-		botChan.send(string);
-		botChan.send(embed);
+		noteChan.send(string);
+		noteChan.send(embed);
 	}
 	//update the fissure list with the new list
 	wGetLog.fissure = fissure.slice();
@@ -735,7 +738,7 @@ function WGNews(data){
 			}else{
 				if(newsNode.translations.en != null){
 
-					botChan.send(getRole(config.botRoleMess[1]) + " " + newsNode.message +
+					noteChan.send(getRole(config.botRoleMess[1]) + " " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
 				}
 			}
@@ -768,7 +771,7 @@ function roleSet(message){
 				return value.first()
 			});
 		message.then(l=> {
-			l.edit("React with a " 
+			l.edit("React with " 
 				+ getEmoji(config.emoji[0]) + " to gain or lose the Fissure role\nReact with " 
 				+ getEmoji(config.emoji[1]) + ' to gain or lose the Lith role\nReact with '
 				+ getEmoji(config.emoji[2]) + " to gain or lose the Meso role\nReact with "
