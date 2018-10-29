@@ -65,7 +65,7 @@ bot.on("ready", () => {
 	});
 
 	//Seting the playing text for the bot
-	bot.user.setActivity("Sacrificing Goats");
+	bot.user.setActivity("With Fissures");
 	//#remove
 	//Reads in the files into variables (going to set up proper jsons and includes later)
 	file.readWeapFile(weaponList, weap);
@@ -849,6 +849,7 @@ function getFissRole(fissNode){
 			break;
 		case "Spy":
 		case "Exterminate":
+		case "Extermination":
 		case "Capture":
 		case "Rescue":
 			output.push(6);
