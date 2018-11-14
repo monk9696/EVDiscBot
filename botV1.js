@@ -65,7 +65,7 @@ bot.on("ready", () => {
 	});
 
 	//Seting the playing text for the bot
-	bot.user.setActivity("With Fissures");
+	bot.user.setActivity("Fortuna For Hopeless Romantic");
 	//#remove
 	//Reads in the files into variables (going to set up proper jsons and includes later)
 	file.readWeapFile(weaponList, weap);
@@ -852,6 +852,7 @@ function getFissRole(fissNode){
 		case "Extermination":
 		case "Capture":
 		case "Rescue":
+		case "Hive":
 			output.push(6);
 			break;
 		case "Mobile Defense":
