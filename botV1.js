@@ -65,7 +65,7 @@ bot.on("ready", () => {
 	});
 
 	//Seting the playing text for the bot
-	bot.user.setActivity("Fortuna For Hopeless Romantic");
+	bot.user.setActivity(config.playingMessage);
 	//#remove
 	//Reads in the files into variables (going to set up proper jsons and includes later)
 	file.readWeapFile(weaponList, weap);
@@ -124,7 +124,7 @@ bot.on('message', (message) =>{
 	//Switch statement fo handling all cases based off the first term
 	switch(litteral){
 		case "temp":
-				message.channel.send("This command does not exist");
+			message.channel.send("This command does not exist");
 			break;
 		case "help"://help command for explaining what a comand does
 			switch(args[0]){
@@ -192,122 +192,53 @@ bot.on('message', (message) =>{
 			roleMess.then(l=>{
 				//Generate the List of emoji's as an array
 				let emojArr = l.reactions.array();
-					//for each emoji
-					for(let i = 0; i < emojArr.length; i++){
-						let pepes = emojArr[i].users.array();
-						//for each user
-						for(let j = 0; j < pepes.length; j++){
-							//Accept only non-bot users
-							if (!pepes[j].bot){
-								//Identify the user as a guild member object
-								let mem = botGuild.fetchMember(pepes[j]).then(memb=>{
-									return memb;
-								});
-								//based of each emoji for the reaction
-								switch(emojArr[i].emoji){
-									case getEmoji(config.emoji[0]) :
-										//Once the guild member is recieved
-										mem.then(l=> {
-											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleFissure[0]))){
-												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[0]))});
-											}else{
-												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[0]))});
-											}
-										})
-										break;
-									case getEmoji(config.emoji[1]) :
-										//Once the guild member is recieved
-										mem.then(l=> {
-											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleFissure[1]))){
-												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[1]))});
-											}else{
-												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[1]))});
-											}
-										})
-										break;
-									case getEmoji(config.emoji[2]) :
-										//Once the guild member is recieved
-										mem.then(l=> {
-											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleFissure[2]))){
-												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[2]))});
-											}else{
-												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[2]))});
-											}
-										})
-										break;
-									case getEmoji(config.emoji[3]) :
-										//Once the guild member is recieved
-										mem.then(l=> {
-											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleFissure[3]))){
-												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[3]))});
-											}else{
-												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[3]))});
-											}
-										})
-										break;
-									case getEmoji(config.emoji[4]) :
-										//Once the guild member is recieved
-										mem.then(l=> {
-											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleFissure[4]))){
-												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[4]))});
-											}else{
-												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[4]))});
-											}
-										})
-										break;
-									case getEmoji(config.emoji[5]) :
-										//Once the guild member is recieved
-										mem.then(l=> {
-											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleFissure[5]))){
-												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[5]))});
-											}else{
-												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[5]))});
-											}
-										})
-										break;
-									case getEmoji(config.emoji[6]) :
-										//Once the guild member is recieved
-										mem.then(l=> {
-											//Identify if they have the role for said member
-											if(l.roles.array().includes(getRole(config.botRoleFissure[6]))){
-												//remove the role if they have it
-												mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[6]))});
-											}else{
-												//add's the role if they don't have it
-												mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[6]))});
-											}
-										})
-										break;
-									default:
-										//If not a valid emoji DM the user that it is a invalid emoji
-										let emo = emojArr[i].emoji.name;
-										pepes[j].createDM().then(l=>{
-											l.send(emo + " is not a suggested reaction and has no link please avoid this in the future");
-										});
-										break;
-								}
+				//for each emoji
+				for(let i = 0; i < emojArr.length; i++){
+					let pepes = emojArr[i].users.array();
+					//for each user
+					for(let j = 0; j < pepes.length; j++){
+						//Accept only non-bot users
+						if (!pepes[j].bot){
+						//Identify the user as a guild member object
+							let mem = botGuild.fetchMember(pepes[j]).then(memb=>{
+								return memb;
+							});
+							//based of each emoji for the reaction
+
+							switch(emojArr[i].emoji){
+								case getEmoji(config.emoji[0]) :
+									roleUpdate(mem,0);
+									break;
+								case getEmoji(config.emoji[1]) :
+									roleUpdate(mem,1);
+									break;
+								case getEmoji(config.emoji[2]) :
+									roleUpdate(mem,2);
+									break;
+								case getEmoji(config.emoji[3]) :
+									roleUpdate(mem,3);
+									break;
+								case getEmoji(config.emoji[4]) :
+									roleUpdate(mem,4);
+									break;
+								case getEmoji(config.emoji[5]) :
+									roleUpdate(mem,5);
+									break;
+								case getEmoji(config.emoji[6]) :
+									roleUpdate(mem,6);
+									break;
+								default:
+									//If not a valid emoji DM the user that it is a invalid emoji
+									let emo = emojArr[i].emoji.name;
+									pepes[j].createDM().then(l=>{
+										l.send(emo + " is not a suggested reaction and has no link please avoid this in the future");
+									});
+									break;
 							}
 						}
 					}
-				});
+				}
+			});
 			//delete the users command
 			message.delete();
 			//clear and re-assign the reaction's to the role message
@@ -549,6 +480,16 @@ bot.on('message', (message) =>{
 				}
 			}
 			file.weaponOutput(weaponList);
+			break;
+		case "setPlaying"://lets bot administraitors set the playing message of the bot
+			if (role){
+				config.playingMessage = args.join(' ');;
+				file.configUpdate(config);
+				bot.user.setActivity(config.playingMessage);
+				message.reply("Playing message set to: " + config.playingMessage);
+			}else{
+				message.reply("You do not have the proper role for this command");
+			}
 			break;
 		default: //default responce when no command path is reached
 			message.reply(litteral + " is not a valid command check your spelling");
@@ -864,7 +805,8 @@ function getFissRole(fissNode){
 	}
 
 	//warlord Pick
-	/*Scrapped for confussing message output
+	/*
+	Scrapped for confussing message output
 	switch(fissNode.node){
 		case "Mot (Void)":
 			output.push(7);
@@ -872,8 +814,22 @@ function getFissRole(fissNode){
 		default:
 			//then the node is not deamed by the warlords
 			break;
-	}*/
+	}
+	*/
 	
 	return output;
 }
 
+function roleUpdate(mem,num){
+	//Once the guild member is recieved
+	mem.then(l=> {
+		//Identify if they have the role for said member
+		if(l.roles.array().includes(getRole(config.botRoleFissure[num]))){
+			//remove the role if they have it
+			mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[num]))});
+		}else{
+			//add's the role if they don't have it
+			mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[num]))});
+		}
+	})
+}
