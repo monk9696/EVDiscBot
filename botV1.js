@@ -14,10 +14,7 @@ const file = new fs();
 const bot = new Discord.Client();
 
 //bot Channels
-let botChan;
-let anonChan;
-let noteChan;
-let permChan;
+let botChan, anonChan, noteChan, permChan;
 
 
 //admin role so bot can dm when there is an issue or missing exception
@@ -514,7 +511,7 @@ async function warGet(){
 		console.log(e + " Failed to Fetch");})
 		//parses the api into json form for easy access
 		.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
-			console.log(e + " Failed Parsing");})
+			tempFetch()})
 			//pass in the json object for notification
 			.then(data=>{
 				WGCetus(data);
@@ -530,7 +527,14 @@ async function warGet(){
 }
 //functions to check to reweite for simplification
 //news 
-
+function tempFetch(){
+	//fetch the data from the pc warframe status
+	fetch("https://ws.warframestat.us/pc").catch(e=> {
+		console.log(e + " Failed to Fetch");})
+		//parses the api into json form for easy access
+		.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
+			console.log(e + " Failed Parsing");})
+}
 //This handles the request for cetus time changes
 function WGCetus(data){
 	//checks if the cycle has swaped
@@ -611,7 +615,7 @@ function WGFissure(data){
 				"\nTime Until Collapse: " + fissureNode.eta
 			);
 			fissRole(fissureNot, fissureNode);
-			stat.fiss.push(fissureNode);
+			fissFix(fissureNode);
 		}else{
 			fissure.push(fissureNode.id);
 		}
@@ -816,8 +820,28 @@ function getFissRole(fissNode){
 			break;
 	}
 	*/
-	
 	return output;
+}
+
+function fissFix(data){
+	let node = data.node.split(' ');
+	let planet = node[node.length-1];
+	node.pop();
+	node = node.join(' ');
+	if(data.missionType == "Exterminate" || "Extermination"){
+		data.missionType = "Extermination";
+	}
+	let data2 = {
+		node: node,
+		planet: planet.substring(1,planet.length-1),
+		missionType: data.missionType,
+		enemy: data.enemy,
+		tier: data.tier,
+		month: data.activation.substring(5,7),
+		year: data.activation.substring(0,3)
+	}
+
+	stat.fiss.push(data2);
 }
 
 function roleUpdate(mem,num){
