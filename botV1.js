@@ -80,7 +80,7 @@ bot.on("ready", () => {
 	
 	
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
-	setInterval(warGet, 60);
+	setInterval(warGet, 60000);
 	//set up for the auto role selection
 	roleMess = roleSet(roleMess);
 	
