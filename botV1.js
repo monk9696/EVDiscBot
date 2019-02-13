@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 
 //Config for specific constants that are user based
 let config = require("./auth.json");
-const weap = require("./weap.json");
+//const weap = require("./weap.json");
 let wGetLog = require("./WGet.json");
 
 //Filesystem to store relevant data to the proper files
@@ -40,7 +40,7 @@ let cetus = [null,""];
 let baro = false;
 
 // storage variables for the data that gets stored
-let weaponList = new Map();
+//let weaponList = new Map();
 
 //current universal role declaration to define the user as admin
 let role = false;
@@ -63,9 +63,10 @@ bot.on("ready", () => {
 
 	//Seting the playing text for the bot
 	bot.user.setActivity(config.playingMessage);
-	//#remove
+
+
 	//Reads in the files into variables (going to set up proper jsons and includes later)
-	file.readWeapFile(weaponList, weap);
+//	file.readWeapFile(weaponList, weap);
 	
 	//Defines text-channels for certain bot outputs
 	//botchannel
@@ -134,13 +135,13 @@ bot.on('message', (message) =>{
 				case "role":
 					message.channel.send("This Command states if your current role has access to all viable commands");
 					break;
-					case "roleFix":
+				case "roleFix":
 					message.channel.send("This command will fix the roles for all reaction that want to gain or lose a specific role");					
 					break;
 				case "roll":
 					message.channel.send("This command can be used to roll a dice of a specified size, !roll [number] if you leave number empty it will default to 6");
 					break;
-				case "add":
+/*				case "add":
 					message.channel.send("This command will allow people with the proper role to add a build to the list of avilable builds");
 					message.channel.send("!add [weapon\\_name] [link] [Sustained\\_dps] [Burst\\_dps] [MR] [Status\\_Chance] [description[]], weapon\\_name needs to be one word so replace any spaces with a \\_");
 					message.channel.send("Sustained and Burst are the dps Calculations for each, Description is the description for the build may be multiple words")
@@ -172,7 +173,7 @@ bot.on('message', (message) =>{
 					message.channel.send("This command will clear the list or weapons for requested weapons once they are resolved, the use of this command is restricted to those with a specific role");
 					message.channel.send("!clear_request [weapon[]] where weapon[] is a list of the weapons to remove from the list of requested weapons.");					
 					break;
-				default: 
+*/				default: 
 					message.channel.send("There are numerous commands that can be used, typing !help [command] will give you more info on that command");
 					message.channel.send("Commands: ping, role, roll, add, get, edit, delete, list, request, get_request, clear\\_request")
 					break;
@@ -253,7 +254,7 @@ bot.on('message', (message) =>{
 			else
 				message.reply("You rolled a " + (Math.floor(Math.random() * 6) + 1));
 			break;
-		case "add"://allows adding a weapon build to the list of weapons requires admin status
+/*		case "add"://allows adding a weapon build to the list of weapons requires admin status
 			//check for the admin role as defined by the auth.json
 			if(!role){
 				message.reply("You do not have the proper role for this command");
@@ -478,7 +479,7 @@ bot.on('message', (message) =>{
 			}
 			file.weaponOutput(weaponList);
 			break;
-		case "setPlaying"://lets bot administraitors set the playing message of the bot
+*/		case "setPlaying"://lets bot administraitors set the playing message of the bot
 			if (role){
 				config.playingMessage = args.join(' ');;
 				file.configUpdate(config);
