@@ -36,15 +36,13 @@ class fileWrite{
 		let output = JSON.stringify(data, null, 2);
 		fs.writeFile(config.fileWrite[2], output, (err) => {
 			if(err) throw err;
-			//console.log("weapon saver");
 		})
 	}
 
 	configUpdate(data){
 		let output = JSON.stringify(data, null, 1);
-		fs.writeFile("auth.json", output, (err) => {
+		fs.writeFile(config.fileWrite[1], output, (err) => {
 			if(err) throw err;
-			//console.log("weapon saver");
 		})
 	}
 
