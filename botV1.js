@@ -724,7 +724,7 @@ function roleSet(message){
 				+ getEmoji(config.emoji[3]) + " to gain or lose the Neo role\nReact with "
 				+ getEmoji(config.emoji[4]) + " to gain or lose the Axi role\nReact with "
 				+ getEmoji(config.emoji[5]) + " to gain or lose the Endurance role\nReact with "
-				+ getEmoji(config.emoji[6]) + " to gain or lose the Quick role\nReact with "
+				+ getEmoji(config.emoji[6]) + " to gain or lose the Quick role\n"
 				+ 'When you are ready send !roleFix in ' + config.channel[0]);
 		});
 	}else{
