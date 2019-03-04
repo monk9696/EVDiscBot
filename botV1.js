@@ -249,7 +249,8 @@ bot.on('message', (message) =>{
 			break;
 		case "roll"://rolls a die default 6 or based off input
 			//if it is acompanied by a number roll for that number
-			if(typeof args[0] == "number")
+			let num = parseInt(args[0]);
+			if(typeof num == "number")
 				message.reply("You rolled a " + (Math.floor(Math.random() * args[0]) + 1));
 			else
 				message.reply("You rolled a " + (Math.floor(Math.random() * 6) + 1));
