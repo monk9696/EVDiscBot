@@ -3,7 +3,6 @@ const Discord = require('discord.js');
 
 //Config for specific constants that are user based
 let config = require("./auth.json");
-//const weap = require("./weap.json");
 let wGetLog = require("./WGet.json");
 
 //Filesystem to store relevant data to the proper files
@@ -19,6 +18,7 @@ let botChan, anonChan, noteChan, permChan;
 
 //admin role so bot can dm when there is an issue or missing exception
 let adm;
+
 //Fissure alert Statistic collection
 let stat = require("./stat.json");
 //define stat if empty
@@ -39,9 +39,6 @@ const fetch = require('node-fetch')
 let cetus = [null,""];
 let baro = false;
 
-// storage variables for the data that gets stored
-//let weaponList = new Map();
-
 //current universal role declaration to define the user as admin
 let role = false;
 
@@ -55,7 +52,6 @@ bot.on("ready", () => {
 	
 	//declares a main testing role ie dm target
 	botGuild.members.array().forEach(x=>{
-		//console.log(x.user.id);
 		if(x.user.id == config.botAdmin){
 			adm = x.user;
 		}
@@ -63,10 +59,6 @@ bot.on("ready", () => {
 
 	//Seting the playing text for the bot
 	bot.user.setActivity(config.playingMessage);
-
-
-	//Reads in the files into variables (going to set up proper jsons and includes later)
-//	file.readWeapFile(weaponList, weap);
 	
 	//Defines text-channels for certain bot outputs
 	//botchannel
@@ -83,7 +75,7 @@ bot.on("ready", () => {
 	setInterval(warGet, 60000);
 	//set up for the auto role selection
 	roleMess = roleSet(roleMess);
-	
+	console.log("Setup Complete");
 });
 
 //when a message is sent in any channel it is apart of this line will execute
@@ -141,39 +133,7 @@ bot.on('message', (message) =>{
 				case "roll":
 					message.channel.send("This command can be used to roll a dice of a specified size, !roll [number] if you leave number empty it will default to 6");
 					break;
-/*				case "add":
-					message.channel.send("This command will allow people with the proper role to add a build to the list of avilable builds");
-					message.channel.send("!add [weapon\\_name] [link] [Sustained\\_dps] [Burst\\_dps] [MR] [Status\\_Chance] [description[]], weapon\\_name needs to be one word so replace any spaces with a \\_");
-					message.channel.send("Sustained and Burst are the dps Calculations for each, Description is the description for the build may be multiple words")
-					break;
-				case "get":
-					message.channel.send("This command will allow you the get a build for any weapon in our database");
-					message.channel.send("!get [weapon_name[]] weapon name must be one word so replace and space with a \\_, you can also request as many weapons as you desire by adding the next weapon to the end !get [weapon1] [weapon2]");
-					break;
-				case "delete": 
-					message.channel.send("This command will allow those with the permission, to delete a build/weapon from the bot for a reason");
-					message.channel.send("!delete [weapon\\_name] [number], weapon\\_name needs to be one word so replace any spaces with a \\_, and number is the number by the build when using the !get command");
-					message.channel.send("If you want to just delete the weapon, juet ignore the number stipulation")
-					break;
-				case "edit":
-					message.channel.send("This command will allow those with the permission, to edit the description of a weapon for a specific build");
-					message.channel.send("!edit [weapon\\_name] [number] [description], see !add for information on [weapon\\_name] and [description], [number] is the number found by the build you want to edit");
-					break;
-				case "list":
-					message.channel.send("This command will list all of the different weapons stored in the database");
-					break;
-				case "request":
-					message.channel.send("This command will allow you to request builds for a weapon that does not exist in the database");
-					message.channel.send("!request [weapon_name[]] where the weapon\\_name[] is one word per weapon so replace the space with a \\_ numerous weapons can be requested at one time.");
-					break;
-				case "get_request":
-					message.channel.send("This command will respond with a list of the requested weapons");
-					break;
-				case "clear_request":
-					message.channel.send("This command will clear the list or weapons for requested weapons once they are resolved, the use of this command is restricted to those with a specific role");
-					message.channel.send("!clear_request [weapon[]] where weapon[] is a list of the weapons to remove from the list of requested weapons.");					
-					break;
-*/				default: 
+				default: 
 					message.channel.send("There are numerous commands that can be used, typing !help [command] will give you more info on that command");
 					message.channel.send("Commands: ping, role, roll, add, get, edit, delete, list, request, get_request, clear\\_request")
 					break;
@@ -255,235 +215,10 @@ bot.on('message', (message) =>{
 			else
 				message.reply("You rolled a " + (Math.floor(Math.random() * 6) + 1));
 			break;
-/*		case "add"://allows adding a weapon build to the list of weapons requires admin status
-			//check for the admin role as defined by the auth.json
-			if(!role){
-				message.reply("You do not have the proper role for this command");
-				break;
-			}
-			//check for the minimum number of arguments
-			if(args.length < 7){
-			message.reply("You need to include the weapon name, link to the build, Sustained and Burst DPS numbers, the weapons MR, and the Status chance and a description");
-				break;
-			}
-			//generate the different parts of the weapon struct
-			
-			//description of the build detail
-			let descrip = "";
-			for(let r = 6; r < args.length; r++){
-				descrip = descrip + args[r] + " ";
-			}
-			//define everything to the weapon
-			let Weapon = {
-				Link: args[1],
-				Sustained: args[2],
-				Burst: args[3],
-				MR: args[4],
-				Status: args[5],
-				Descrip: descrip
-			};
-			//check if the weapon already exists in the system and adds it to the weapon
-			//if not will add the weapon to the map and add it to the list
-			if(weaponList[args[0]]){
-				weaponList[args[0]].push(Weapon);
-			} else {
-				weaponList[args[0]] = [];
-				weaponList[args[0]].push(Weapon);
-			}
-			//confirm that it is added and will save the new weapon set to the list
-			message.channel.send(args[0] + " added to the list");
-			file.weaponOutput(weaponList);
-			break;
-		case "list"://list the weapons currently with a build in the system
-			//pull the names of all the weapons into list
-			let list = Object.keys(weaponList);
-			//check if there are any weapons in the list
-			if(list.length >= 1){
-				//create the output string
-				let out = "";
-				//loop through the list
-				for(let name of list){
-					//append the weapon to the list
-					out += name + ", ";
-					//check for the char limit of discord with extra space
-					if(out.length >= 1500){
-						//output the list and re-assign the output string as new
-						message.channel.send(out);
-						out = "";
-					}
-				}
-				//out put the last string in the list
-				message.channel.send(out);
-			} else {
-				message.reply("No stored Weapons");
-			}
-			break;
-		case "edit"://allows editing of the desctiption of a weapon build requires admin status
-			//check if the user is at an admin level
-			if(!role){
-				message.reply("You do not have the proper role for this command");
-				break;
-			}
-			//check if all the args are present
-			if(!args[2])
-			{
-				message.channel.send("You are missing parameters, please see !help for information")
-				break;
-			}
-			//check if the weapin exists in the list
-			if(!weaponList[args[0]] || args[0] == "request"){
-				message.reply(args[0] + " does not exist in the database");
-				break;
-			}
-			//check if the build selected is a valid build
-			if(!weaponList[args[0]][(args[1]-1)]){
-				message.reply("The selected weapon does not have " + args[1] + " different builds please select within the bounds of the number of builds");
-				message.reply(args[0] + " has " + weaponList[args[0]].length + " builds");
-				break;
-			}
-			//take in the new description for the weapon
-			let description = "";
-			for(let i = 2; i < args.length; i++){
-				description += args[i] + " ";
-			}
-			//assigns the description to the weapon build
-			weaponList[args[0]][(args[1]-1)].Descrip = description;
-			file.weaponOutput(weaponList);
-			break;
-		case "delete"://allow deletion of a build requires admin status
-			//checks for the admin level role
-			if(!role){
-				message.reply("You do not have the proper role for this command");
-				break;
-			}
-			if (args[0] == "request")
-			{
-				message.channel.send("Request is not a valid weapon to remove");
-				break;
-			}
-			//checks if you input a number for the build
-			if (args[1] == undefined){
-				//check if the weapon exists
-				if (weaponList[args[0]]){
-					//delete the weapon and all the builds from the list
-					message.channel.send(args[0] + " deleted");
-					delete weaponList[args[0]];
-					weaponList.delete(args[0]);
-				}
-			//check if the build is within the bounds
-			} else if (weaponList[args[0]] && weaponList[args[0]].length >= args[1]){
-				//checks if it is the last build for the weapon
-				if (weaponList[args[0]].length >= 1){
-					//removes the build from the weapon in the list
-					weaponList[args[0]].splice((args[1] - 1), 1);
-				} else {
-					//deletes the weapon since there are no more builds left
-					delete weaponList[args[0]];
-					weaponList.delete(args[0]);
-				}
-			//default incase the weapon or build number does not exist
-			} else {
-				message.reply("Either the weapon does not exist or does not have " + args[1] + " builds");
-			}
-			//updates the load file
-			file.weaponOutput(weaponList);
-			break;
-		case "get"://allows retrival of multiple builds from the system
-			//checks if there is a weapon in the input
-			if (args[0] && args[0] != "request"){
-				//loop through all the weapons listed
-				for (let j = 0; j < args.length; j++){
-					//checks if the weapon exists in the system
-					if (weaponList[args[j]]){
-						//checks incase the weapoin has no builds
-						if (weaponList[args[j]][0]){
-							//print out the base info
-							message.channel.send(args[j] + ": Required MR: " + weaponList[args[j]][0].MR);
-							//loops through all the build info
-							for(let i = 0; i < weaponList[args[j]].length; i++){
-								message.channel.send((i+1) + ": " + weaponList[args[j]][i].Descrip + "\nSustained DPS: " + weaponList[args[j]][i].Sustained + ", Burst DPS: " + weaponList[args[j]][i].Burst + ", Status Chance: " + weaponList[args[j]][i].Status + "\n" + weaponList[args[j]][i].Link);
-							}
-						} else {
-							message.reply(args[j] + " does not have a build yet, make sure it is spelled correctly before requesting a build ERROR: Deleted");
-						}
-					} else {
-						message.reply(args[j] + " does not have a build yet, make sure it is spelled correctly before requesting a build");
-					}
-				}
-			} else {
-				message.reply("You must list some weapon for this command"); 
-			}
-			//confirms when all builds are retrieved
-			message.channel.send("Done");
-			break;
-		case "request"://adds to a list of requested weapons builds by your community
-			//checks if there is a weapon requested
-			if(args[0] == undefined){
-				message.reply("You need to add a weapon to request");
-				break;
-			}
-			//adds all the weapons to the requested list
-			for(let i = 0; i < args.length; i++){
-				if(weaponList["request"].indexOf(args[i]) == -1){
-					weaponList["request"].push(args[i]);
-					message.channel.send(args[i] + " added to the request list");
-				} else {
-					message.channel.send(args[i] + " already exists");
-				}
-			}
-			//updates the file
-			file.weaponOutput(weaponList);
-			break;
-		case "get_request"://returns the list of requested builds
-			//checks if there are any weapons requested
-			if(weaponList["request"].length == 0){
-				message.channel.send("No requested builds");
-				break;
-			}
-			// creates the output string and lists all of the weapons in the requested que
-			let out = "";
-			for(let name of weaponList["request"]){
-				out += name + ", ";
-				console.log(out.length);
-				//confirms the char limit of discord with a buffer area
-				if(out.length >= 1500){
-					message.channel.send(out);
-					out = "";
-				}
-			}
-			//outputs the final message of requested weapons
-			if(out !== ""){
-				message.channel.send(out);
-			}
-			break;
-		case "clear_request"://allows removal of the request list or to clear the whole list requires admin status
-			//checks for admin role
-			if(!role){
-				message.reply("You do not have the proper role for this command");
-				break;
-			}
-			//checks if there are any specific weapons to remove
-			if(!args[0]){
-				//clears the whole requested list of any weapons
-				weaponList["request"] = [];
-				message.reply("Requests have been cleared");
-			}
-			//removes only the selected weapons from the request list
-			else{ 
-				for(let i of args){
-					let loc = neededWeapons.indexOf(i)
-					if(loc > -1){
-						message.channel.send(i + " removed");
-						neededWeapons.splice(loc,1);
-					}
-				}
-			}
-			file.weaponOutput(weaponList);
-			break;
-*/		case "setPlaying"://lets bot administraitors set the playing message of the bot
+		case "setPlaying"://lets bot administraitors set the playing message of the bot
 			if (role){
 				config.playingMessage = args.join(' ');;
-				file.configUpdate(config);
+				file.output(config,config.fileWrite[0]);
 				bot.user.setActivity(config.playingMessage);
 				message.reply("Playing message set to: " + config.playingMessage);
 			}else{
@@ -524,7 +259,7 @@ async function warGet(){
 			})
 			.catch(e=> console.log(e + " Failed to run warGet functions"))
 			//update the json for the cached id's to streamline relauching the bot to reduce notifications
-				.then(check => {file.writeWGet(wGetLog); file.statOutput(stat);})
+				.then(check => {file.output(wGetLog,config.fileWrite[1]); file.output(stat,config.fileWrite[2]);})
 				.catch(e=> console.log(e + " Failed to update log"));	
 }
 //functions to check to reweite for simplification
@@ -747,7 +482,7 @@ function roleSet(message){
 		await message.react(getEmoji(config.emoji[6]));
 		//console.log(message);
 		config.roleMessage = message.id;
-		file.configUpdate(config);
+		file.output(config,config.fileWrite[0]);
 	});
 	return message;
 }
