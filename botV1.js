@@ -251,7 +251,7 @@ bot.on('message', (message) =>{
 			//if it is acompanied by a number roll for that number
 			let num = parseInt(args[0]);
 			if(typeof num == "number")
-				message.reply("You rolled a " + (Math.floor(Math.random() * args[0]) + 1));
+				message.reply("You rolled a " + (Math.floor(Math.random() * num) + 1));
 			else
 				message.reply("You rolled a " + (Math.floor(Math.random() * 6) + 1));
 			break;
