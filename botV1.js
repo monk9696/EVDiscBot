@@ -303,7 +303,6 @@ function WGAlert(data){
 		//identifies there is a new allert and adds it to the embed	
 		if(wGetLog.alert.indexOf(alertNode.id) == -1){
 			alertBool = true;
-			alert.push(alertNode.id);
 			embed.addField(alertNode.mission.node,
 				"Mission Type: " + alertNode.mission.type + 
 				"\nEnemy Faction: " + alertNode.mission.faction + 
@@ -315,9 +314,8 @@ function WGAlert(data){
 				"\nArchwing: " + alertNode.mission.archwingRequired
 			);
 			stat.alert.push(alertNode);
-		}else{
-			alert.push(alertNode.id);
 		}
+		alert.push(alertNode.id);
 	//check if a new embed is going to be pushed and push it
 	}if(alertBool == true){
 		noteChan.send(getRole(config.botRoleMess[2]) + "");
@@ -332,7 +330,6 @@ function WGFissure(data){
 	//define the alert id list and the check value for a new notification
 	let fissure = [];
 	let fissureNot = [getRole(config.botRoleFissure[0])];
-	//console.log(fissureNot);
 	let fisBool = false;
 	//initiate and set up the discord embed output
 	const embed = new Discord.RichEmbed();
@@ -344,7 +341,6 @@ function WGFissure(data){
 		//check if there is a new fissure
 		if(wGetLog.fissure.indexOf(fissureNode.id) == -1){
 			fisBool = true;
-			fissure.push(fissureNode.id);
 			embed.addField( fissureNode.node,
 				"Mission Type: " + fissureNode.missionType + 
 				"\nEnemy Faction: " + fissureNode.enemy + 
@@ -353,9 +349,8 @@ function WGFissure(data){
 			);
 			fissRole(fissureNot, fissureNode);
 			fissFix(fissureNode);
-		}else{
-			fissure.push(fissureNode.id);
 		}
+		fissure.push(fissureNode.id);
 	}
 	//check if there is a new fissure and push the embed
 	if(fisBool == true){
@@ -412,22 +407,20 @@ function WGNews(data){
 	let news = [];
 	for(let i = 0; i < data.news.length; i++){
 		let newsNode = data.news[i];
-		if(wGetLog.news.indexOf(newsNode.id) == -1){
-			news.push(newsNode.id);
-			if(newsNode.update == true || newsNode.primeAccess == true){
-				anonChan.send("@everyone " + newsNode.message +
-					"\nFourm Link: " + newsNode.link);
-			}else{
-				if(newsNode.translations.en != null){
-
+		let id = newsNode.id;
+		newsNode = newsFix(newsNode);
+		if (newsNode.en){
+			if(wGetLog.news.indexOf(id) == -1){
+				if(newsNode.update == true || newsNode.primeAccess == true){
+					anonChan.send("@everyone " + newsNode.message +
+						"\nFourm Link: " + newsNode.link);
+				}else{
 					noteChan.send(getRole(config.botRoleMess[1]) + " " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
-				}
+				}			
 			}
-			stat.news.push(newsNode);
-		}else{
-			news.push(newsNode.id);
 		}
+		news.push(id);
 	}
 	wGetLog.news = news.slice();	
 }
@@ -568,17 +561,38 @@ function fissFix(data){
 	if(data.missionType == "Exterminate" || "Extermination"){
 		data.missionType = "Extermination";
 	}
-	let data2 = {
+	let fiss = {
 		node: node,
 		planet: planet.substring(1,planet.length-1),
 		missionType: data.missionType,
 		enemy: data.enemy,
 		tier: data.tier,
 		month: data.activation.substring(5,7),
-		year: data.activation.substring(0,3)
+		year: data.activation.substring(0,4)
 	}
 
-	stat.fiss.push(data2);
+	stat.fiss.push(fiss);
+}
+
+function newsFix(data){
+	let news = null
+	let en = false;
+	if (typeof data.translations.en !== 'undefined'){
+		en = true;
+		data.message = data.translations.en;
+	}
+	news = {
+		message: data.message,
+		link: data.link,
+		month: data.date.substring(5,7),
+		year: data.date.substring(0,4),
+		update: data.update,
+		primeAccess: data.primeAccess,
+		stream: data.stream,
+		en: en
+	}
+	stat.news.push(news);
+	return news;
 }
 
 function roleUpdate(mem,num){
