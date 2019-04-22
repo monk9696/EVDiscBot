@@ -27,6 +27,9 @@ if(stat.alert == null){
 		alert:[],
 		fiss:[],
 		news:[],
+		sortie: "",
+		baro: false,
+		cetus: false
 	};
 }
 
@@ -36,8 +39,6 @@ let roleMess = config.roleMessage;
 
 //parse the Warframe Data
 const fetch = require('node-fetch')
-let cetus = [null,""];
-let baro = false;
 
 //current universal role declaration to define the user as admin
 let role = false;
@@ -173,26 +174,29 @@ bot.on('message', (message) =>{
 							//based of each emoji for the reaction
 
 							switch(emojArr[i].emoji){
-								case getEmoji(botGuild,config.emoji[0]) :
-									roleUpdate(mem,0);
-									break;
-								case getEmoji(botGuild,config.emoji[1]) :
+								case getEmoji(emojiGuild,config.otherEmoji[0]) :
 									roleUpdate(mem,1);
 									break;
-								case getEmoji(botGuild,config.emoji[2]) :
+								case getEmoji(emojiGuild,config.otherEmoji[1]) :
 									roleUpdate(mem,2);
 									break;
-								case getEmoji(botGuild,config.emoji[3]) :
+								case getEmoji(emojiGuild,config.otherEmoji[2]) :
 									roleUpdate(mem,3);
 									break;
-								case getEmoji(botGuild,config.emoji[4]) :
+								case getEmoji(emojiGuild,config.otherEmoji[3]) :
 									roleUpdate(mem,4);
 									break;
-								case getEmoji(botGuild,config.emoji[5]) :
+								case getEmoji(emojiGuild,config.otherEmoji[4]) :
 									roleUpdate(mem,5);
 									break;
-								case getEmoji(botGuild,config.emoji[6]) :
+								case getEmoji(emojiGuild,config.otherEmoji[5]) :
 									roleUpdate(mem,6);
+									break;
+								case getEmoji(emojiGuild,config.otherEmoji[6]) :
+									roleUpdate(mem,7);
+									break;
+								case getEmoji(emojiGuild,config.otherEmoji[7]) :
+									roleUpdate(mem,9);
 									break;
 								default:
 									//If not a valid emoji DM the user that it is a invalid emoji
@@ -281,6 +285,7 @@ async function warGet(){
 				WGFissure(data);
 				WGBaro(data);
 				WGNews(data);
+				WGSortie(data);
 			})
 			.catch(e=> console.log(e + " Failed to run warGet functions"))
 			//update the json for the cached id's to streamline relauching the bot to reduce notifications
@@ -300,17 +305,15 @@ function tempFetch(){
 //This handles the request for cetus time changes
 function WGCetus(data){
 	//checks if the cycle has swaped
-	if(cetus[0] != data.cetusCycle.isDay){
+	if(wGetLog.cetus != data.cetusCycle.isDay){
 		//change the day night value
-		cetus[0] = data.cetusCycle.isDay;
-		if(cetus[0] == true){
+		wGetLog.cetus = data.cetusCycle.isDay;
+		if(wGetLog.cetus == true){
 			noteChan.send("Cetus has returned to day and the Eidolons have gone back into hiding");
 		}else{
 			noteChan.send("Night has befallen Cetus and the Eidolons have been agitated and must be stoped");	
 		}
 	}
-	//update the quick output for bot switch statement
-	cetus[1] = data.cetusCycle.shortString;
 }
 
 //This handles the creation and posting of embeds for new alerts
@@ -343,7 +346,7 @@ function WGAlert(data){
 		alert.push(alertNode.id);
 	//check if a new embed is going to be pushed and push it
 	}if(alertBool == true){
-		noteChan.send(getRole(config.botRoleMess[2]) + "");
+		noteChan.send(getRole(config.botRoleMess[9]) + "");
 		noteChan.send(embed);
 	}
 	//update the alert list since there is a new alert
@@ -354,7 +357,7 @@ function WGAlert(data){
 function WGFissure(data){
 	//define the alert id list and the check value for a new notification
 	let fissure = [];
-	let fissureNot = [getRole(config.botRoleFissure[0])];
+	let fissureNot = [getRole(config.botRoleMess[1])];
 	let fisBool = false;
 	//initiate and set up the discord embed output
 	const embed = new Discord.RichEmbed();
@@ -393,8 +396,8 @@ function WGFissure(data){
 //send a fissure to get the roles it would require and only add new ones to fissureNot
 function fissRole(fissureNot, fissureNode){
 	getFissRole(fissureNode).forEach((x)=>{
-		if(!fissureNot.some((y)=> getRole(config.botRoleFissure[x]).name == y.name)){
-			fissureNot.push(getRole(config.botRoleFissure[x]));
+		if(!fissureNot.some((y)=> getRole(config.botRoleMess[x]).name == y.name)){
+			fissureNot.push(getRole(config.botRoleMess[x]));
 		}
 	});
 }
@@ -402,25 +405,25 @@ function fissRole(fissureNot, fissureNode){
 //return an array of the roles that pertian to this fissure
 function getFissRole(fissNode){
 	//parse fiss node for our fissure list
-	let output = [0];
+	let output = [];
 
 	//fissure tier
 	switch(fissNode.tier){
 		//lith
 		case "Lith":
-			output.push(1);
+			output.push(2);
 			break;
 		//meso
 		case "Meso":
-			output.push(2);
+			output.push(3);
 			break;
 		//neo
 		case "Neo":
-			output.push(3);
+			output.push(4);
 			break;
 		//axi
 		case "Axi":
-			output.push(4);
+			output.push(5);
 			break;
 		default:
 			adm.createDM().then(x=> x.send(fissNode.tier + " Does not have a Teir"));
@@ -432,7 +435,7 @@ function getFissRole(fissNode){
 		case "Survival":
 		case "Excavation":
 		case "Interception":
-			output.push(5);
+			output.push(6);
 			break;
 		case "Spy":
 		case "Exterminate":
@@ -440,7 +443,7 @@ function getFissRole(fissNode){
 		case "Capture":
 		case "Rescue":
 		case "Hive":
-			output.push(6);
+			output.push(7);
 			break;
 		case "Mobile Defense":
 		case "Sabotage":
@@ -477,10 +480,10 @@ function fissFix(data){
 //This Handles notification and listing of Baro Ki'teer and his inventory
 function WGBaro(data){
 	//check if baro was here last tick
-	if(baro == false){
+	if(wGetLog.baro == false){
 		//if he wasn't check if he is now here
 		if(data.voidTrader.active == true){
-			baro = true;
+			wGetLog.baro = true;
 			//set up the baro embed
 			let workEmbed = new Discord.RichEmbed();
 			workEmbed.setTitle("Baro Ki'teer's inventory");
@@ -506,7 +509,7 @@ function WGBaro(data){
 		}
 	}else{
 		if(data.voidTrader.active == false){
-			baro = false;
+			wGetLog.baro = false;
 		}
 	}
 }
@@ -524,7 +527,7 @@ function WGNews(data){
 					anonChan.send("@everyone " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
 				}else{
-					noteChan.send(getRole(config.botRoleMess[1]) + " " + newsNode.message +
+					noteChan.send(getRole(config.botRoleMess[8]) + " " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
 				}			
 			}
@@ -556,44 +559,80 @@ function newsFix(data){
 	return news;
 }
 
+function WGNightWave(data){
+
+
+}
+
+function WGSortie(data){
+	let sortie = data.sortie;
+	if(wGetLog.sortie != sortie.id){
+		
+		let embed = new Discord.RichEmbed();
+		embed.setTitle("Sortie Update -- " + sortie.faction);
+		embed.setColor(0x4f034d);
+		for(let i = 0; i < sortie.variants.length; i++){
+			embed.addField(sortie.variants[i].missionType,
+				"Location: " + sortie.variants[i].node +
+				"\nModifier: " + sortie.variants[i].modifier +
+				"\nDescription: " + sortie.variants[i].modifierDescription);
+		}
+		noteChan.send(getRole(config.botRoleMess[10]) + "");
+		noteChan.send(embed);
+		wGetLog.sortie = sortie.id;
+		console.log(sortie.id);
+	}
+}
+
 //Create or find the role setting message and will add the specified reactions to the message
 //take in the message ID and return the message object, This simplifies storing and finding
 function roleSet(message){
 	if(message == null){
-		permChan.send("this is a new message");
-		console.log("Role Set message created");
+
+		let embed = new Discord.RichEmbed();
+		embed.setTitle("Select your Roles then send !roleFix in #" + config.channel[0] );
+		embed.setColor(0xffffff);
+
+		embed.addField("Fissure",
+			"React with " + getEmoji(emojiGuild,config.otherEmoji[0]) + " to gain or lose the Fissure role\n" 
+			+ "React with " + getEmoji(emojiGuild,config.otherEmoji[1]) + " to gain or lose the Lith role\n" 
+			+ "React with "	+ getEmoji(emojiGuild,config.otherEmoji[2]) + " to gain or lose the Meso role\n" 
+			+ "React with "	+ getEmoji(emojiGuild,config.otherEmoji[3]) + " to gain or lose the Neo role\n" 
+			+ "React with "	+ getEmoji(emojiGuild,config.otherEmoji[4]) + " to gain or lose the Axi role\n"
+			+ "React with " + getEmoji(emojiGuild,config.otherEmoji[5]) + " to gain or lose the Endurance role\n"
+			+ "React with " + getEmoji(emojiGuild,config.otherEmoji[6]) + " to gain or lose the Quick role\n"
+
+
+			);
+		embed.addField("Other",
+			 "React with " + getEmoji(emojiGuild,config.otherEmoji[7]) + " to gain or lose the Alert role\n"
+
+			);
+
+		permChan.send(embed);
+		
 		message = permChan.fetchMessages({limit: 1})
 			.then(function(value){
+				console.log("Role Set message created");
 				return value.first()
 			});
-		message.then(l=> {
-			l.edit(
-				"React with " + getEmoji(botGuild,config.emoji[0]) + " to gain or lose the Fissure role\n" 
-				+ "React with " + getEmoji(botGuild,config.emoji[1]) + " to gain or lose the Lith role\n" 
-				+ "React with "	+ getEmoji(botGuild,config.emoji[2]) + " to gain or lose the Meso role\n" 
-				+ "React with "	+ getEmoji(botGuild,config.emoji[3]) + " to gain or lose the Neo role\n" 
-				+ "React with "	+ getEmoji(botGuild,config.emoji[4]) + " to gain or lose the Axi role\n"
-				+ "React with " + getEmoji(botGuild,config.emoji[5]) + " to gain or lose the Endurance role\n"
-				+ "React with " + getEmoji(botGuild,config.emoji[6]) + " to gain or lose the Quick role\n"
-				+ 'When you are ready send !roleFix in ' + config.channel[0]);
-		});
 	}else{
 		message = permChan.fetchMessage(message)
 			.then(value => {
 				return value;
 			}).catch(e => {
-				//console.log(e);
 				return roleSet(null);
 			});
 	}
 	message.then(async(message) =>{
-		await message.react(getEmoji(botGuild,config.emoji[0]));
-		await message.react(getEmoji(botGuild,config.emoji[1]));
-		await message.react(getEmoji(botGuild,config.emoji[2]));
-		await message.react(getEmoji(botGuild,config.emoji[3]));
-		await message.react(getEmoji(botGuild,config.emoji[4]));
-		await message.react(getEmoji(botGuild,config.emoji[5]));
-		await message.react(getEmoji(botGuild,config.emoji[6]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[0]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[1]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[2]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[3]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[4]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[5]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[6]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[7]));
 		//console.log(message);
 		config.roleMessage = message.id;
 		file.output(config,config.fileWrite[0]);
@@ -607,12 +646,12 @@ function roleUpdate(mem,num){
 	//Once the guild member is recieved
 	mem.then(l=> {
 		//Identify if they have the role for said member
-		if(l.roles.array().includes(getRole(config.botRoleFissure[num]))){
+		if(l.roles.array().includes(getRole(config.botRoleMess[num]))){
 			//remove the role if they have it
-			mem.then(memb => {memb.removeRole(getRole(config.botRoleFissure[num]))});
+			mem.then(memb => {memb.removeRole(getRole(config.botRoleMess[num]))});
 		}else{
 			//add's the role if they don't have it
-			mem.then(memb => {memb.addRole(getRole(config.botRoleFissure[num]))});
+			mem.then(memb => {memb.addRole(getRole(config.botRoleMess[num]))});
 		}
 	})
 }

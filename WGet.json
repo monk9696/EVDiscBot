@@ -1,6 +1,8 @@
 {
   "news": [],
   "fissure": [],
-  "alert": []
-  
+  "alert": [],
+  "sortie": "",
+  "baro": false,
+  "cetus": true
 }
