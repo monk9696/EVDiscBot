@@ -283,9 +283,11 @@ async function warGet(){
 				WGCetus(data);
 				WGAlert(data);
 				WGFissure(data);
+				WGSortie(data);
+				
 				WGBaro(data);
 				WGNews(data);
-				WGSortie(data);
+				
 			})
 			.catch(e=> console.log(e + " Failed to run warGet functions"))
 			//update the json for the cached id's to streamline relauching the bot to reduce notifications
