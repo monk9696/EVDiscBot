@@ -19,6 +19,8 @@ let botChan, anonChan, noteChan, permChan;
 //admin role so bot can dm when there is an issue or missing exception
 let adm;
 
+
+/*
 //Fissure alert Statistic collection
 let stat = require("./stat.json");
 //define stat if empty
@@ -32,7 +34,7 @@ if(stat.alert == null){
 		cetus: false
 	};
 }
-
+*/
 
 //Defines the message for the role selection
 let roleMess = config.roleMessage;
@@ -284,14 +286,15 @@ async function warGet(){
 				WGAlert(data);
 				WGFissure(data);
 				WGSortie(data);
-				
+				WGNightWave(data);
+
 				WGBaro(data);
 				WGNews(data);
 				
 			})
 			.catch(e=> console.log(e + " Failed to run warGet functions"))
 			//update the json for the cached id's to streamline relauching the bot to reduce notifications
-				.then(check => {file.output(wGetLog,config.fileWrite[1]); file.output(stat,config.fileWrite[2]);})
+				.then(check => {file.output(wGetLog,config.fileWrite[1]);})
 				.catch(e=> console.log(e + " Failed to update log"));	
 }
 //functions to check to reweite for simplification
@@ -343,7 +346,6 @@ function WGAlert(data){
 				"\nNightmare Mission: " + alertNode.mission.nightmare +
 				"\nArchwing: " + alertNode.mission.archwingRequired
 			);
-			stat.alert.push(alertNode);
 		}
 		alert.push(alertNode.id);
 	//check if a new embed is going to be pushed and push it
@@ -370,6 +372,7 @@ function WGFissure(data){
 		let fissureNode = data.fissures[i];
 		//check if there is a new fissure
 		if(wGetLog.fissure.indexOf(fissureNode.id) == -1){
+			fissureNode = fissFix(fissureNode);
 			fisBool = true;
 			embed.addField( fissureNode.node,
 				"Mission Type: " + fissureNode.missionType + 
@@ -378,7 +381,7 @@ function WGFissure(data){
 				"\nTime Until Collapse: " + fissureNode.eta
 			);
 			fissRole(fissureNot, fissureNode);
-			fissFix(fissureNode);
+			
 		}
 		fissure.push(fissureNode.id);
 	}
@@ -457,26 +460,20 @@ function getFissRole(fissNode){
 	return output;
 }
 
-//Trim and fix the fissure node before adding it to the stat.json
+//Trim and fix the fissure node for consistency
 function fissFix(data){
-	let node = data.node.split(' ');
-	let planet = node[node.length-1];
-	node.pop();
-	node = node.join(' ');
 	if(data.missionType == "Exterminate" || "Extermination"){
 		data.missionType = "Extermination";
 	}
 	let fiss = {
-		node: node,
-		planet: planet.substring(1,planet.length-1),
+		id: data.id,
+		node: data.node,
 		missionType: data.missionType,
 		enemy: data.enemy,
 		tier: data.tier,
-		month: data.activation.substring(5,7),
-		year: data.activation.substring(0,4)
+		eta: data.eta
 	}
-
-	stat.fiss.push(fiss);
+	return fiss;
 }
 
 //This Handles notification and listing of Baro Ki'teer and his inventory
@@ -539,7 +536,7 @@ function WGNews(data){
 	wGetLog.news = news.slice();	
 }
 
-//Trim and fix the news node before using it and adding it to the stat.json
+//Trim and fix the news node before using it
 function newsFix(data){
 	let news = null
 	let en = false;
@@ -557,19 +554,38 @@ function newsFix(data){
 		stream: data.stream,
 		en: en
 	}
-	stat.news.push(news);
 	return news;
 }
 
 function WGNightWave(data){
+	let nightID = [];
+	let night = data.nightwave.activeChallenges;
+	let nightBool = false;
 
+	const embed = new Discord.RichEmbed();
+	embed.setTitle("Nora Night Daily Transmision");
+	embed.setColor(0x000000);
 
+	for(let i = 0; i<night.length; i++){
+		let nightNode = night[i];
+		if(wGetLog.nightwave.indexOf(nightNode.id) == -1){
+			nightBool = true;
+			embed.addField( nightNode.title,
+				"Challenge: " + nightNode.desc + 
+				"\nReputation: " + nightNode.reputation
+			);
+		}
+		nightID.push(nightNode.id);
+	}if(nightBool == true){
+		noteChan.send(getRole(config.botRoleMess[11]) + "");
+		noteChan.send(embed);
+		wGetLog.nightwave = nightID;
+	}
 }
 
 function WGSortie(data){
 	let sortie = data.sortie;
 	if(wGetLog.sortie != sortie.id){
-		
 		let embed = new Discord.RichEmbed();
 		embed.setTitle("Sortie Update -- " + sortie.faction);
 		embed.setColor(0x4f034d);
@@ -582,7 +598,6 @@ function WGSortie(data){
 		noteChan.send(getRole(config.botRoleMess[10]) + "");
 		noteChan.send(embed);
 		wGetLog.sortie = sortie.id;
-		console.log(sortie.id);
 	}
 }
 
@@ -641,8 +656,6 @@ function roleSet(message){
 	});
 	return message;
 }
-
-
 
 function roleUpdate(mem,num){
 	//Once the guild member is recieved
