@@ -197,9 +197,19 @@ bot.on('message', (message) =>{
 								case getEmoji(emojiGuild,config.otherEmoji[6]) :
 									roleUpdate(mem,7);
 									break;
+								case getEmoji(emojiGuild,config.otherEmoji[10]) :
+									roleUpdate(mem,8);
+									break;
 								case getEmoji(emojiGuild,config.otherEmoji[7]) :
 									roleUpdate(mem,9);
 									break;
+								case getEmoji(emojiGuild,config.otherEmoji[8]) :
+									roleUpdate(mem,10);
+									break;
+								case getEmoji(emojiGuild,config.otherEmoji[9]) :
+									roleUpdate(mem,11);
+									break;
+								
 								default:
 									//If not a valid emoji DM the user that it is a invalid emoji
 									let emo = emojArr[i].emoji.name;
@@ -623,6 +633,9 @@ function roleSet(message){
 			);
 		embed.addField("Other",
 			 "React with " + getEmoji(emojiGuild,config.otherEmoji[7]) + " to gain or lose the Alert role\n"
+			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[8]) + " to gain or lose the Sortie role\n"
+			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[9]) + " to gain or lose the NightWave role\n"
+			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[10]) + " to gain or lose the News role\n"
 
 			);
 
@@ -650,6 +663,9 @@ function roleSet(message){
 		await message.react(getEmoji(emojiGuild,config.otherEmoji[5]));
 		await message.react(getEmoji(emojiGuild,config.otherEmoji[6]));
 		await message.react(getEmoji(emojiGuild,config.otherEmoji[7]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[8]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[9]));
+		await message.react(getEmoji(emojiGuild,config.otherEmoji[10]));
 		//console.log(message);
 		config.roleMessage = message.id;
 		file.output(config,config.fileWrite[0]);
