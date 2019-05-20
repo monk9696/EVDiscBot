@@ -568,28 +568,30 @@ function newsFix(data){
 }
 
 function WGNightWave(data){
-	let nightID = [];
-	let night = data.nightwave.activeChallenges;
-	let nightBool = false;
+	if(data.nightwave != undefined){
+		let nightID = [];
+		let night = data.nightwave.activeChallenges;
+		let nightBool = false;
 
-	const embed = new Discord.RichEmbed();
-	embed.setTitle("Nora Night Daily Transmision");
-	embed.setColor(0x000000);
+		const embed = new Discord.RichEmbed();
+		embed.setTitle("Nora Night Daily Transmision");
+		embed.setColor(0x000000);
 
-	for(let i = 0; i<night.length; i++){
-		let nightNode = night[i];
-		if(wGetLog.nightwave.indexOf(nightNode.id) == -1){
-			nightBool = true;
-			embed.addField( nightNode.title,
-				"Challenge: " + nightNode.desc + 
-				"\nReputation: " + nightNode.reputation
-			);
+		for(let i = 0; i<night.length; i++){
+			let nightNode = night[i];
+			if(wGetLog.nightwave.indexOf(nightNode.id) == -1){
+				nightBool = true;
+				embed.addField( nightNode.title,
+					"Challenge: " + nightNode.desc + 
+					"\nReputation: " + nightNode.reputation
+				);
+			}
+			nightID.push(nightNode.id);
+		}if(nightBool == true){
+			noteChan.send(getRole(config.botRoleMess[11]) + "");
+			noteChan.send(embed);
+			wGetLog.nightwave = nightID;
 		}
-		nightID.push(nightNode.id);
-	}if(nightBool == true){
-		noteChan.send(getRole(config.botRoleMess[11]) + "");
-		noteChan.send(embed);
-		wGetLog.nightwave = nightID;
 	}
 }
 
