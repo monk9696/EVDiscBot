@@ -472,9 +472,11 @@ function getFissRole(fissNode){
 
 //Trim and fix the fissure node for consistency
 function fissFix(data){
+
 	if(data.missionType == "Exterminate" || data.missionType == "Extermination"){
 		data.missionType = "Extermination";
 	}
+	
 	let fiss = {
 		id: data.id,
 		node: data.node,
