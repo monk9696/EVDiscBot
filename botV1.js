@@ -1,6 +1,6 @@
 //Discord lib
 const Discord = require('discord.js');
-
+const WorldState = require('warframe-worldstate-parser');
 //Config for specific constants that are user based
 let config = require("./auth.json");
 let wGetLog = require("./WGet.json");
@@ -84,9 +84,11 @@ bot.on("ready", () => {
 	
 	
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
-	setInterval(warGet, 60000);
+//	setInterval(warGet, 60000);
+
+	ge();
 	//set up for the auto role selection
-	roleMess = roleSet(roleMess);
+//	roleMess = roleSet(roleMess);
 	console.log("Setup Complete");
 });
 
@@ -275,10 +277,22 @@ function getEmoji(guild ,string){
 }
 
 
+async function ge(){
+	console.log("fetch");
+	fetch("http://content.warframe.com/dynamic/worldState.php")
+		.then((body) => body.text())
+		.then((data) => {
+			let ws = new WorldState(data);
+
+			WGNews(ws.news);
 
 
-
-
+//			file.output(ws,"WGPropperOut.json");
+		}).then(check => {file.output(wGetLog,config.fileWrite[1]);})
+		.catch((e) => {
+			console.log(e);
+		})
+}
 
 
 //Function to load in the data from the Warframe API
@@ -307,8 +321,12 @@ async function warGet(){
 				.then(check => {file.output(wGetLog,config.fileWrite[1]);})
 				.catch(e=> console.log(e + " Failed to update log"));	
 }
-//functions to check to reweite for simplification
-//news 
+
+
+//functions commented
+//news
+//news fix
+
 function tempFetch(){
 	//fetch the data from the pc warframe status
 	fetch("https://ws.warframestat.us/pc").catch(e=> {
@@ -317,6 +335,7 @@ function tempFetch(){
 		.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
 			console.log(e + " Failed Parsing");})
 }
+
 //This handles the request for cetus time changes
 function WGCetus(data){
 	//checks if the cycle has swaped
@@ -410,6 +429,9 @@ function WGFissure(data){
 
 //send a fissure to get the roles it would require and only add new ones to fissureNot
 function fissRole(fissureNot, fissureNode){
+
+	//loop through the list of current roles to output all the role notifications
+
 	getFissRole(fissureNode).forEach((x)=>{
 		if(!fissureNot.some((y)=> getRole(config.botRoleMess[x]).name == y.name)){
 			fissureNot.push(getRole(config.botRoleMess[x]));
@@ -472,11 +494,12 @@ function getFissRole(fissNode){
 
 //Trim and fix the fissure node for consistency
 function fissFix(data){
-
+	//set extermiantion text
 	if(data.missionType == "Exterminate" || data.missionType == "Extermination"){
 		data.missionType = "Extermination";
 	}
 	
+	//collect the important data
 	let fiss = {
 		id: data.id,
 		node: data.node,
@@ -526,41 +549,52 @@ function WGBaro(data){
 }
 
 //Handles Notificatons for News hot off the press from Warframe
-function WGNews(data){
+function WGNews(newsFull){
+	
+	//Set up array to put currently active news ID's into
 	let news = [];
-	for(let i = 0; i < data.news.length; i++){
-		let newsNode = data.news[i];
+	//loop through the full list of currently active news
+	for(let i = 0; i < newsFull.length; i++){
+		//select the news and trim the data to needs
+		let newsNode = newsFull[i];
 		let id = newsNode.id;
 		newsNode = newsFix(newsNode);
-		if (newsNode.en){
-			if(wGetLog.news.indexOf(id) == -1){
+		//check if the id matches one that has already been listed
+		if(wGetLog.news.indexOf(id) === -1){
+			//check if the news is an english news segment
+			if (newsNode.en){
+				//Identify if it is an Update or Prime Access news to link everyone
 				if(newsNode.update == true || newsNode.primeAccess == true){
 					anonChan.send("@everyone " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
+				//otherwise just notify the news channel	
 				}else{
 					noteChan.send(getRole(config.botRoleMess[8]) + " " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
 				}			
 			}
 		}
+		//add the id to the active list so we don't repost any news Items
 		news.push(id);
 	}
+	//update the list of active news articles to be stored
 	wGetLog.news = news.slice();	
 }
 
 //Trim and fix the news node before using it
 function newsFix(data){
+	//create a blank object
 	let news = null
 	let en = false;
+	//check if there is an english translation or no defined language to set the news as english
 	if (typeof data.translations.en !== 'undefined'){
 		en = true;
 		data.message = data.translations.en;
 	}
+	//Copy over the news article information that we need in the format that we need
 	news = {
 		message: data.message,
 		link: data.link,
-		month: data.date.substring(5,7),
-		year: data.date.substring(0,4),
 		update: data.update,
 		primeAccess: data.primeAccess,
 		stream: data.stream,
@@ -570,6 +604,7 @@ function newsFix(data){
 }
 
 function WGNightWave(data){
+	//check if there is a nightwave
 	if(data.nightwave != undefined){
 		let nightID = [];
 		let night = data.nightwave.activeChallenges;
@@ -614,6 +649,10 @@ function WGSortie(data){
 		wGetLog.sortie = sortie.id;
 	}
 }
+
+
+//end of warGet
+
 
 //Create or find the role setting message and will add the specified reactions to the message
 //take in the message ID and return the message object, This simplifies storing and finding
