@@ -285,41 +285,23 @@ async function ge(){
 			let ws = new WorldState(data);
 
 			WGNews(ws.news);
+			WGCetus(ws.cetusCycle);
+			WGAlert(ws.alerts);
+			WGFissure(ws.fissures);
+			WGSortie(ws.sortie);
+			WGNightWave(ws.nightwave);
+			WGBaro(ws.voidTrader);
+			WGNews(ws.news);
 
+			//earth valis, constructionproggress
+			//invasion daily deal simmaris
+
+			file.output(wGetLog,config.fileWrite[1]);
 
 //			file.output(ws,"WGPropperOut.json");
-		}).then(check => {file.output(wGetLog,config.fileWrite[1]);})
-		.catch((e) => {
+		}).catch((e) => {
 			console.log(e);
 		})
-}
-
-
-//Function to load in the data from the Warframe API
-async function warGet(){
-	//console.log("WarGet");
-	//fetch the data from the pc warframe status
-	fetch("https://ws.warframestat.us/pc").catch(e=> {
-		console.log(e + " Failed to Fetch");})
-		//parses the api into json form for easy access
-		.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
-			tempFetch()})
-			//pass in the json object for notification
-			.then(data=>{
-				WGCetus(data);
-				WGAlert(data);
-				WGFissure(data);
-				WGSortie(data);
-				WGNightWave(data);
-
-				WGBaro(data);
-				WGNews(data);
-				
-			})
-			.catch(e=> console.log(e + " Failed to run warGet functions"))
-			//update the json for the cached id's to streamline relauching the bot to reduce notifications
-				.then(check => {file.output(wGetLog,config.fileWrite[1]);})
-				.catch(e=> console.log(e + " Failed to update log"));	
 }
 
 
@@ -327,15 +309,46 @@ async function warGet(){
 //news
 //news fix
 
-function tempFetch(){
-	//fetch the data from the pc warframe status
-	fetch("https://ws.warframestat.us/pc").catch(e=> {
-		console.log(e + " Failed to Fetch");})
-		//parses the api into json form for easy access
-		.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
-			console.log(e + " Failed Parsing");})
-}
 
+//Function to load in the data from the Warframe API
+/*
+	async function warGet(){
+		//console.log("WarGet");
+		//fetch the data from the pc warframe status
+		fetch("https://ws.warframestat.us/pc").catch(e=> {
+			console.log(e + " Failed to Fetch");})
+			//parses the api into json form for easy access
+			.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
+				tempFetch()})
+				//pass in the json object for notification
+				.then(data=>{
+					WGCetus(data);
+					WGAlert(data);
+					WGFissure(data);
+					WGSortie(data);
+					WGNightWave(data);
+
+					WGBaro(data);
+					WGNews(data);
+					
+				})
+				.catch(e=> console.log(e + " Failed to run warGet functions"))
+				//update the json for the cached id's to streamline relauching the bot to reduce notifications
+					.then(check => {file.output(wGetLog,config.fileWrite[1]);})
+					.catch(e=> console.log(e + " Failed to update log"));	
+	}
+
+
+
+	function tempFetch(){
+		//fetch the data from the pc warframe status
+		fetch("https://ws.warframestat.us/pc").catch(e=> {
+			console.log(e + " Failed to Fetch");})
+			//parses the api into json form for easy access
+			.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
+				console.log(e + " Failed Parsing");})
+	}
+*/
 //This handles the request for cetus time changes
 function WGCetus(data){
 	//checks if the cycle has swaped
