@@ -84,9 +84,9 @@ bot.on("ready", () => {
 	
 	
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
-//	setInterval(warGet, 60000);
+	setInterval(warGet, 60000);
 
-	ge();
+//	ge();
 	//set up for the auto role selection
 //	roleMess = roleSet(roleMess);
 	console.log("Setup Complete");
@@ -261,7 +261,7 @@ bot.on('message', (message) =>{
 //Should reconect the bot if it momentarily disconnects from the server 
 bot.on("error", (e) => console.error(e));
 bot.on("warn", (e) => console.warn(e));
-//bot.on("debug", (e) => console.info(e));
+bot.on("debug", (e) => console.info(e));
 
 //Command will log the bot in upon start up
 bot.login(config.token);
@@ -277,11 +277,14 @@ function getEmoji(guild ,string){
 }
 
 
-async function ge(){
+async function warGet(){
 	console.log("fetch");
 	fetch("http://content.warframe.com/dynamic/worldState.php")
+		.catch(e=> console.log(e))
 		.then((body) => body.text())
 		.then((data) => {
+
+
 			let ws = new WorldState(data);
 
 			WGNews(ws.news);
@@ -291,14 +294,15 @@ async function ge(){
 			WGSortie(ws.sortie);
 			WGNightWave(ws.nightwave);
 			WGBaro(ws.voidTrader);
-			WGNews(ws.news);
+			WGInvasion(ws.invasion);
+
+
 
 			//earth valis, constructionproggress
 			//invasion daily deal simmaris
 
 			file.output(wGetLog,config.fileWrite[1]);
-
-//			file.output(ws,"WGPropperOut.json");
+			//file.output(ws,"WGPropperOut.json");
 		}).catch((e) => {
 			console.log(e);
 		})
@@ -352,9 +356,9 @@ async function ge(){
 //This handles the request for cetus time changes
 function WGCetus(data){
 	//checks if the cycle has swaped
-	if(wGetLog.cetus != data.cetusCycle.isDay){
+	if(wGetLog.cetus != data.isDay){
 		//change the day night value
-		wGetLog.cetus = data.cetusCycle.isDay;
+		wGetLog.cetus = data.isDay;
 		if(wGetLog.cetus == true){
 			noteChan.send("Cetus has returned to day and the Eidolons have gone back into hiding");
 		}else{
@@ -373,8 +377,8 @@ function WGAlert(data){
 	embed.setTitle("New alerts have been activated")
 	embed.setColor(0xff0000);
 	//go through the list of alerts
-	for(let i = 0; i < data.alerts.length; i++){
-		let alertNode = data.alerts[i];
+	for(let i = 0; i < data.length; i++){
+		let alertNode = data[i];
 		//identifies there is a new allert and adds it to the embed	
 		if(wGetLog.alert.indexOf(alertNode.id) == -1){
 			alertBool = true;
@@ -399,6 +403,46 @@ function WGAlert(data){
 	wGetLog.alert = alert.slice();
 }
 
+
+function WGInvasion(data){
+	let invasion = [];
+	let invasionBool = false;
+	//initiate and set up the discord embed output
+	let embed = new Discord.RichEmbed();
+	embed.setTitle("New Invasions have started, gear up Tenno");
+	embed.setColor(0xffffff);
+	//loop throught all invasions currently active
+	for(let i = 0; i < data.length; i++){
+		let invasionNode = data[i];
+		//check if it is a new invasion
+		if(wGetLog.invasion.indexOf(invasionNode.id) == -1){
+			invasionBool = true;
+			//check if there aretwo sides of the invasion
+			if(invasionNode.vsInfestation){
+				embed.addField(invasionNode.node,
+					"Mission Rewards: " + invasionNode.defenderReward.asString);
+	
+			}else{
+				embed.addField(invasionNode.node,
+					"Reward A: " + invasionNode.attackerReward.asString +
+					"\nReward B: " + invasionNode.defenderReward.asString);
+			}
+		}
+		invasion.push(invasionNode.id);
+	}
+	//check if there is an embed to print
+	if(invasionBool == true){
+		noteChan.send(getRole(config.botRoleMess[12]) + "");
+		noteChan.send(embed);
+	}
+	//update the alert list since there is a new alert
+	wGetLog.invasion = invasion.slice();
+
+
+	
+}
+
+
 //This handles the creation of embeds for new fissures
 function WGFissure(data){
 	//define the alert id list and the check value for a new notification
@@ -410,8 +454,8 @@ function WGFissure(data){
 	embed.setTitle("New Fissures have Opened");
 	embed.setColor(0xffff00);
 	//loop through the fissure list
-	for(let i = 0; i < data.fissures.length; i++){
-		let fissureNode = data.fissures[i];
+	for(let i = 0; i < data.length; i++){
+		let fissureNode = data[i];
 		//check if there is a new fissure
 		if(wGetLog.fissure.indexOf(fissureNode.id) == -1){
 			fissureNode = fissFix(fissureNode);
@@ -529,13 +573,13 @@ function WGBaro(data){
 	//check if baro was here last tick
 	if(wGetLog.baro == false){
 		//if he wasn't check if he is now here
-		if(data.voidTrader.active == true){
+		if(data.active == true){
 			wGetLog.baro = true;
 			//set up the baro embed
 			let workEmbed = new Discord.RichEmbed();
 			workEmbed.setTitle("Baro Ki'teer's inventory");
 			workEmbed.setColor(0x63738c);
-			let baroInv = data.voidTrader.inventory;
+			let baroInv = data.inventory;
 			let embed = [];
 			//loop through baros inventory
 			for(let i = 0; i < baroInv.length; i++){
@@ -620,7 +664,7 @@ function WGNightWave(data){
 	//check if there is a nightwave
 	if(data.nightwave != undefined){
 		let nightID = [];
-		let night = data.nightwave.activeChallenges;
+		let night = data.activeChallenges;
 		let nightBool = false;
 
 		const embed = new Discord.RichEmbed();
@@ -646,7 +690,7 @@ function WGNightWave(data){
 }
 
 function WGSortie(data){
-	let sortie = data.sortie;
+	let sortie = data;
 	if(wGetLog.sortie != sortie.id){
 		let embed = new Discord.RichEmbed();
 		embed.setTitle("Sortie Update -- " + sortie.faction);
