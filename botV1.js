@@ -15,11 +15,8 @@ const bot = new Discord.Client();
 //bot Channels
 let botChan, anonChan, noteChan, permChan;
 
-
 //admin role so bot can dm when there is an issue or missing exception
 let adm;
-
-
 
 //Fissure alert Statistic collection
 let stat = require("./stat.json");
@@ -35,7 +32,6 @@ if(stat.alert == null){
 		cetus: false
 	};
 }
-
 
 //Defines the message for the role selection
 let roleMess = config.roleMessage;
@@ -53,7 +49,7 @@ let emojiGuild;
 
 //What the bot does on startup
 bot.on("ready", () => {
-
+	console.log("Setup Beginning")
 	//sets up the main guild for the bot
 	botGuild = bot.guilds.find('name', config.mainGuild);
 	
@@ -87,9 +83,8 @@ bot.on("ready", () => {
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
 
-//	ge();
 	//set up for the auto role selection
-//	roleMess = roleSet(roleMess);
+	roleMess = roleSet(roleMess);
 	console.log("Setup Complete");
 });
 
