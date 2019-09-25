@@ -18,6 +18,8 @@ let botChan, anonChan, noteChan, permChan;
 //admin role so bot can dm when there is an issue or missing exception
 let adm;
 
+
+/*
 //Fissure alert Statistic collection
 let stat = require("./stat.json");
 //define stat if empty
@@ -32,6 +34,8 @@ if(stat.alert == null){
 		cetus: false
 	};
 }
+*/
+
 
 //Defines the message for the role selection
 let roleMess = config.roleMessage;
