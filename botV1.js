@@ -20,7 +20,7 @@ let botChan, anonChan, noteChan, permChan;
 let adm;
 
 
-/*
+
 //Fissure alert Statistic collection
 let stat = require("./stat.json");
 //define stat if empty
@@ -29,12 +29,13 @@ if(stat.alert == null){
 		alert:[],
 		fiss:[],
 		news:[],
+		invasion:[],
 		sortie: "",
 		baro: false,
 		cetus: false
 	};
 }
-*/
+
 
 //Defines the message for the role selection
 let roleMess = config.roleMessage;
