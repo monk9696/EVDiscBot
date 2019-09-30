@@ -12,29 +12,24 @@ const file = new fs();
 //Instantiates the bot
 const bot = new Discord.Client();
 
+
+//Should reconect the bot if it momentarily disconnects from the server 
+bot.on("error", (e) => console.error(e));
+bot.on("warn", (e) => console.warn(e));
+
+bot.on("debug", (e) => console.info(e));
+
+//Command will log the bot in upon start up
+bot.login(config.token);
+
+
+
 //bot Channels
 let botChan, anonChan, noteChan, permChan;
 
 //admin role so bot can dm when there is an issue or missing exception
 let adm;
 
-
-/*
-//Fissure alert Statistic collection
-let stat = require("./stat.json");
-//define stat if empty
-if(stat.alert == null){
-	stat = {
-		alert:[],
-		fiss:[],
-		news:[],
-		invasion:[],
-		sortie: "",
-		baro: false,
-		cetus: false
-	};
-}
-*/
 
 
 //Defines the message for the role selection
@@ -86,7 +81,8 @@ bot.on("ready", () => {
 	
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
-
+	//warGet();
+	
 	//set up for the auto role selection
 	roleMess = roleSet(roleMess);
 	console.log("Setup Complete");
@@ -258,13 +254,8 @@ bot.on('message', (message) =>{
 	}
 });
 
-//Should reconect the bot if it momentarily disconnects from the server 
-bot.on("error", (e) => console.error(e));
-bot.on("warn", (e) => console.warn(e));
-bot.on("debug", (e) => console.info(e));
 
-//Command will log the bot in upon start up
-bot.login(config.token);
+
 
 //Obtain the role object from a guild based of the exact name of the role
 function getRole(string){
@@ -284,7 +275,6 @@ async function warGet(){
 		.then((body) => body.text())
 		.then((data) => {
 
-
 			let ws = new WorldState(data);
 
 			WGNews(ws.news);
@@ -294,18 +284,15 @@ async function warGet(){
 			WGSortie(ws.sortie);
 			WGNightWave(ws.nightwave);
 			WGBaro(ws.voidTrader);
-			WGInvasion(ws.invasion);
-
-
+			WGInvasion(ws.invasions);
 
 			//earth valis, constructionproggress
 			//invasion daily deal simmaris
-
-			file.output(wGetLog,config.fileWrite[1]);
+			
 			//file.output(ws,"WGPropperOut.json");
 		}).catch((e) => {
 			console.log(e);
-		})
+		}).then(checck => {file.output(wGetLog,config.fileWrite[1]);});
 }
 
 
@@ -404,45 +391,6 @@ function WGAlert(data){
 }
 
 
-function WGInvasion(data){
-	let invasion = [];
-	let invasionBool = false;
-	//initiate and set up the discord embed output
-	let embed = new Discord.RichEmbed();
-	embed.setTitle("New Invasions have started, gear up Tenno");
-	embed.setColor(0xffffff);
-	//loop throught all invasions currently active
-	for(let i = 0; i < data.length; i++){
-		let invasionNode = data[i];
-		//check if it is a new invasion
-		if(wGetLog.invasion.indexOf(invasionNode.id) == -1){
-			invasionBool = true;
-			//check if there aretwo sides of the invasion
-			if(invasionNode.vsInfestation){
-				embed.addField(invasionNode.node,
-					"Mission Rewards: " + invasionNode.defenderReward.asString);
-	
-			}else{
-				embed.addField(invasionNode.node,
-					"Reward A: " + invasionNode.attackerReward.asString +
-					"\nReward B: " + invasionNode.defenderReward.asString);
-			}
-		}
-		invasion.push(invasionNode.id);
-	}
-	//check if there is an embed to print
-	if(invasionBool == true){
-		noteChan.send(getRole(config.botRoleMess[12]) + "");
-		noteChan.send(embed);
-	}
-	//update the alert list since there is a new alert
-	wGetLog.invasion = invasion.slice();
-
-
-	
-}
-
-
 //This handles the creation of embeds for new fissures
 function WGFissure(data){
 	//define the alert id list and the check value for a new notification
@@ -488,8 +436,8 @@ function WGFissure(data){
 function fissRole(fissureNot, fissureNode){
 
 	//loop through the list of current roles to output all the role notifications
-
 	getFissRole(fissureNode).forEach((x)=>{
+
 		if(!fissureNot.some((y)=> getRole(config.botRoleMess[x]).name == y.name)){
 			fissureNot.push(getRole(config.botRoleMess[x]));
 		}
@@ -599,7 +547,7 @@ function WGBaro(data){
 		
 		}
 	}else{
-		if(data.voidTrader.active == false){
+		if(data.active == false){
 			wGetLog.baro = false;
 		}
 	}
@@ -662,7 +610,8 @@ function newsFix(data){
 
 function WGNightWave(data){
 	//check if there is a nightwave
-	if(data.nightwave != undefined){
+
+	if(data != undefined){
 		let nightID = [];
 		let night = data.activeChallenges;
 		let nightBool = false;
@@ -670,8 +619,7 @@ function WGNightWave(data){
 		const embed = new Discord.RichEmbed();
 		embed.setTitle("Nora Night Daily Transmision");
 		embed.setColor(0x000000);
-
-		for(let i = 0; i<night.length; i++){
+		for(let i = 0; i < night.length; i++){
 			let nightNode = night[i];
 			if(wGetLog.nightwave.indexOf(nightNode.id) == -1){
 				nightBool = true;
@@ -707,6 +655,40 @@ function WGSortie(data){
 	}
 }
 
+function WGInvasion(data){
+	let invasion = [];
+	let invasionBool = false;
+	//initiate and set up the discord embed output
+	let embed = new Discord.RichEmbed();
+	embed.setTitle("New Invasions have started, gear up Tenno");
+	embed.setColor(0xffffff);
+	//loop throught all invasions currently active
+	for(let i = 0; i < data.length; i++){
+		let invasionNode = data[i];
+		//check if it is a new invasion
+		if(wGetLog.invasion.indexOf(invasionNode.id) == -1){
+			invasionBool = true;
+			//check if there aretwo sides of the invasion
+			if(invasionNode.vsInfestation){
+				embed.addField(invasionNode.node,
+					"Mission Rewards: " + invasionNode.defenderReward.asString);
+	
+			}else{
+				embed.addField(invasionNode.node,
+					"Reward A: " + invasionNode.attackerReward.asString +
+					"\nReward B: " + invasionNode.defenderReward.asString);
+			}
+		}
+		invasion.push(invasionNode.id);
+	}
+	//check if there is an embed to print
+	if(invasionBool == true){
+		noteChan.send(getRole(config.botRoleMess[12]) + "");
+		noteChan.send(embed);
+	}
+	//update the alert list since there is a new alert
+	wGetLog.invasion = invasion.slice();
+}
 
 //end of warGet
 
