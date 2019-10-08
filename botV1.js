@@ -16,8 +16,7 @@ const bot = new Discord.Client();
 //Should reconect the bot if it momentarily disconnects from the server 
 bot.on("error", (e) => console.error(e));
 bot.on("warn", (e) => console.warn(e));
-
-bot.on("debug", (e) => console.info(e));
+//bot.on("debug", (e) => console.info(e));
 
 //Command will log the bot in upon start up
 bot.login(config.token);
@@ -78,7 +77,7 @@ bot.on("ready", () => {
 	//notification channel
 	noteChan = botGuild.channels.find("name",config.channel[3]);
 	
-	
+
 	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
 	setInterval(warGet, 60000);
 	//warGet();
@@ -646,6 +645,7 @@ function WGSortie(data){
 		for(let i = 0; i < sortie.variants.length; i++){
 			embed.addField(sortie.variants[i].missionType,
 				"Location: " + sortie.variants[i].node +
+				"\nMission: " + sortie.variants[i].missionType +
 				"\nModifier: " + sortie.variants[i].modifier +
 				"\nDescription: " + sortie.variants[i].modifierDescription);
 		}
