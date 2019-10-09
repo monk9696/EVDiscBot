@@ -17,7 +17,7 @@ const bot = new Discord.Client();
 bot.on("error", (e) => console.error(e));
 bot.on("warn", (e) => console.warn(e));
 
-bot.on("debug", (e) => console.info(e));
+//bot.on("debug", (e) => console.info(e));
 
 //Command will log the bot in upon start up
 bot.login(config.token);
@@ -269,7 +269,7 @@ function getEmoji(guild ,string){
 
 
 async function warGet(){
-	console.log("fetch");
+//	console.log("fetch");
 	fetch("http://content.warframe.com/dynamic/worldState.php")
 		.catch(e=> console.log(e))
 		.then((body) => body.text())
@@ -476,6 +476,7 @@ function getFissRole(fissNode){
 		case "Defense":
 		case "Survival":
 		case "Excavation":
+		case "Disruption":
 		case "Interception":
 			output.push(6);
 			break;
@@ -649,7 +650,7 @@ function WGSortie(data){
 				"\nModifier: " + sortie.variants[i].modifier +
 				"\nDescription: " + sortie.variants[i].modifierDescription);
 		}
-		noteChan.send(getRole(config.botRoleMess[10]) + "");
+		noteChan.send(getRole(config.botRoleMess[10]) + "\n" + embed);
 		noteChan.send(embed);
 		wGetLog.sortie = sortie.id;
 	}

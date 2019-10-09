@@ -1,3 +1,4 @@
 @echo off
-node --harmony .
+node --harmony --no-warnings .
+
 pause
