@@ -1,4 +1,4 @@
 @echo off
-node --harmony --no-warnings .
+node botV1.js --harmony --no-warnings 
 
 pause

@@ -6,23 +6,15 @@ class xkcd{
 	constructor(){
 	}
 
-	getKCD(){
+	async getKCD(){
 		console.log("Starting to get XKCD");
-
-		fetch("https://xkcd.com/rss.xml")
+		let x;
+		return fetch("https://xkcd.com/rss.xml")
 		.catch(e=> console.log(e))
 		.then((body) => body.text())
-		.then((data) => {
-			//console.log(data)
+		.then((data) => {return this.parseXML(data)});
 
-			let temp = this.parseXML(data);
-			console.log(temp);
-			/*
-			fs.writeFile('xkcd.txt', data, (err) =>{
-				if(err) throw err;
-			})*/
-
-		});
+		
 	}
 	
 
