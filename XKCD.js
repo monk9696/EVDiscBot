@@ -1,5 +1,7 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
+var _ = require('lodash');
+
 
 class xkcd{
 
@@ -31,7 +33,7 @@ class xkcd{
 				title: temp.slice(temp.indexOf("<title>") + 7,temp.indexOf("</title>")),
 				link:  temp.slice(temp.indexOf("<link>") + 6,temp.indexOf("</link>")),
 				img: desc.slice(desc.indexOf('src="') + 5, desc.indexOf('" title')),
-				hover: desc.slice(desc.indexOf("title=") + 7, desc.indexOf('" alt="')),
+				hover: _.unescape(_.unescape(desc.slice(desc.indexOf("title=") + 7, desc.indexOf('" alt="')))),
 				pubDate: temp.slice(temp.indexOf("<pubDate>") + 9,temp.indexOf("</pubDate>")),
 				guid: temp.slice(temp.indexOf("<guid>") + 6,temp.indexOf("</guid>")),
 			}
