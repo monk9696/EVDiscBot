@@ -1,17 +1,31 @@
 //Discord lib
 const Discord = require('discord.js');
-const WorldState = require('warframe-worldstate-parser');
+
 //Config for specific constants that are user based
 let config = require("./auth.json");
-let wGetLog = require("./WGet.json");
 
 //Filesystem to store relevant data to the proper files
 const fs = require("./filewrite.js");
 const file = new fs();
 
+
+//parse the Warframe Data
+
+//Warframe Warget function parser
+const WorldState = require('warframe-worldstate-parser');
+
+//Preexisting values from the wget function that are currently active
+let wGetLog = require("./WGet.json");
+
+//pull data from http requests
+const fetch = require('node-fetch');
+
+//starting temporary rss feed reader
+const xkcd = require("./XKCD.js");
+
+let load = "";
 //Instantiates the bot
 const bot = new Discord.Client();
-
 
 //Should reconect the bot if it momentarily disconnects from the server 
 bot.on("error", (e) => console.error(e));
@@ -21,21 +35,14 @@ bot.on("debug", (e) => console.info(e));
 //Command will log the bot in upon start up
 bot.login(config.token);
 
-
-
 //bot Channels
 let botChan, anonChan, noteChan, permChan;
 
 //admin role so bot can dm when there is an issue or missing exception
 let adm;
 
-
-
 //Defines the message for the role selection
 let roleMess = config.roleMessage;
-
-//parse the Warframe Data
-const fetch = require('node-fetch')
 
 //current universal role declaration to define the user as admin
 let role = false;
@@ -61,11 +68,12 @@ bot.on("ready", () => {
 			adm = x.user;
 		}
 	});
+
 	//test dm to the admin to test other random things
-	//adm.createDM().then(x=> x.send(getEmoji(emojiGuild,config.emoji[8]) + ""));
+//	adm.createDM().then(x=> x.send(getEmoji(emojiGuild,config.emoji[8]) + ""));
 
 	//Seting the playing text for the bot
-	bot.user.setActivity(config.playingMessage);
+//	bot.user.setActivity(config.playingMessage);
 	
 	//Defines text-channels for certain bot outputs
 	//botchannel
@@ -77,13 +85,12 @@ bot.on("ready", () => {
 	//notification channel
 	noteChan = botGuild.channels.find("name",config.channel[3]);
 	
+	//Call all the reccuring functions that are on a Timer
+	loop();
 
-	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
-	setInterval(warGet, 60000);
-	//warGet();
 	
 	//set up for the auto role selection
-	roleMess = roleSet(roleMess);
+//	roleMess = roleSet(roleMess);
 	console.log("Setup Complete");
 });
 
@@ -171,49 +178,45 @@ bot.on('message', (message) =>{
 								return memb;
 							});
 							//based of each emoji for the reaction
-
+							let role = null;
 							switch(emojArr[i].emoji){
 								case getEmoji(emojiGuild,config.otherEmoji[0]) :
-									roleUpdate(mem,1);
+									role = "Fissure";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[1]) :
-									roleUpdate(mem,2);
+									role = "Lith";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[2]) :
-									roleUpdate(mem,3);
+									role = "Meso";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[3]) :
-									roleUpdate(mem,4);
+									role = "Neo";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[4]) :
-									roleUpdate(mem,5);
+									role = "Axi";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[5]) :
-									roleUpdate(mem,6);
+									role = "Endurance";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[6]) :
-									roleUpdate(mem,7);
+									role = "Quick";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[10]) :
-									roleUpdate(mem,8);
+									role = "News";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[7]) :
-									roleUpdate(mem,9);
+									role = "Alert";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[8]) :
-									roleUpdate(mem,10);
+									role = "Sortie";
 									break;
 								case getEmoji(emojiGuild,config.otherEmoji[9]) :
-									roleUpdate(mem,11);
+									role = "NightWave";
 									break;
-								
 								default:
-									//If not a valid emoji DM the user that it is a invalid emoji
-									let emo = emojArr[i].emoji.name;
-									pepes[j].createDM().then(l=>{
-										l.send(emo + " is not a suggested reaction and has no link please avoid this in the future");
-									});
-									break;
+							}
+							if(role !== null){
+								roleUpdate(mem,role);	
 							}
 						}
 					}
@@ -254,7 +257,46 @@ bot.on('message', (message) =>{
 });
 
 
+function loop(){
 
+	//looping loading status
+	setInterval(loading, 5000);
+
+	//automated alert that checks warfarme api in miliseconds 1000 = 1 second
+	setInterval(warGet, 60000);
+
+	//grab the rss feed
+
+	rss();
+	setInterval(rss, 3600000)
+
+
+}
+
+function rss(){
+
+	const comic = new xkcd();
+	
+	const curr = require("./xkcd.json");
+
+	comic.getKCD().then((xk)=>{
+		xk.forEach((x)=>{
+			if(curr.xkcd.indexOf(x.id) === -1){
+				let embed = new Discord.RichEmbed();
+				embed.setTitle(x.title)
+				embed.setColor(0xff0000)
+				embed.setImage(x.img)
+				embed.addField("Hover text\n" + x.hover)		
+				adm.createDM().then((dm) => dm.send(embed));
+			}
+			curr.xkcd.push(x.id);
+		})
+		file.output(curr, "xkcd.json");
+		
+
+	});
+	
+}
 
 //Obtain the role object from a guild based of the exact name of the role
 function getRole(string){
@@ -266,11 +308,11 @@ function getEmoji(guild ,string){
 	return guild.emojis.get(string);
 }
 
+//Function to load in the data from the Warframe API
 
 async function warGet(){
 //	console.log("fetch");
 	fetch("http://content.warframe.com/dynamic/worldState.php")
-		.catch(e=> console.log(e))
 		.then((body) => body.text())
 		.then((data) => {
 
@@ -283,15 +325,17 @@ async function warGet(){
 			WGSortie(ws.sortie);
 			WGNightWave(ws.nightwave);
 			WGBaro(ws.voidTrader);
-			WGInvasion(ws.invasions);
+		//	WGInvasion(ws.invasions);
+
+		//	WGKuva();
 
 			//earth valis, constructionproggress
 			//invasion daily deal simmaris
 			
 			//file.output(ws,"WGPropperOut.json");
-		}).catch((e) => {
-			console.log(e);
-		}).then(checck => {file.output(wGetLog,config.fileWrite[1]);});
+
+		}).then(() => {file.output(wGetLog,config.fileWrite[1]);})
+		.catch((e) => {console.log(e)});
 }
 
 
@@ -299,46 +343,6 @@ async function warGet(){
 //news
 //news fix
 
-
-//Function to load in the data from the Warframe API
-/*
-	async function warGet(){
-		//console.log("WarGet");
-		//fetch the data from the pc warframe status
-		fetch("https://ws.warframestat.us/pc").catch(e=> {
-			console.log(e + " Failed to Fetch");})
-			//parses the api into json form for easy access
-			.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
-				tempFetch()})
-				//pass in the json object for notification
-				.then(data=>{
-					WGCetus(data);
-					WGAlert(data);
-					WGFissure(data);
-					WGSortie(data);
-					WGNightWave(data);
-
-					WGBaro(data);
-					WGNews(data);
-					
-				})
-				.catch(e=> console.log(e + " Failed to run warGet functions"))
-				//update the json for the cached id's to streamline relauching the bot to reduce notifications
-					.then(check => {file.output(wGetLog,config.fileWrite[1]);})
-					.catch(e=> console.log(e + " Failed to update log"));	
-	}
-
-
-
-	function tempFetch(){
-		//fetch the data from the pc warframe status
-		fetch("https://ws.warframestat.us/pc").catch(e=> {
-			console.log(e + " Failed to Fetch");})
-			//parses the api into json form for easy access
-			.then((wfWorldData) => wfWorldData.json()).catch((e)=>{
-				console.log(e + " Failed Parsing");})
-	}
-*/
 //This handles the request for cetus time changes
 function WGCetus(data){
 	//checks if the cycle has swaped
@@ -382,7 +386,7 @@ function WGAlert(data){
 		alert.push(alertNode.id);
 	//check if a new embed is going to be pushed and push it
 	}if(alertBool == true){
-		noteChan.send(getRole(config.botRoleMess[9]) + "");
+		noteChan.send(getRole("Alert") + "");
 		noteChan.send(embed);
 	}
 	//update the alert list since there is a new alert
@@ -394,7 +398,7 @@ function WGAlert(data){
 function WGFissure(data){
 	//define the alert id list and the check value for a new notification
 	let fissure = [];
-	let fissureNot = [getRole(config.botRoleMess[1])];
+	let fissureNot = [getRole("Fissure")];
 	let fisBool = false;
 	//initiate and set up the discord embed output
 	const embed = new Discord.RichEmbed();
@@ -436,9 +440,8 @@ function fissRole(fissureNot, fissureNode){
 
 	//loop through the list of current roles to output all the role notifications
 	getFissRole(fissureNode).forEach((x)=>{
-
-		if(!fissureNot.some((y)=> getRole(config.botRoleMess[x]).name == y.name)){
-			fissureNot.push(getRole(config.botRoleMess[x]));
+		if(!fissureNot.some((y)=> getRole(x).name == y.name)){
+			fissureNot.push(getRole(x));
 		}
 	});
 }
@@ -448,28 +451,6 @@ function getFissRole(fissNode){
 	//parse fiss node for our fissure list
 	let output = [];
 
-	//fissure tier
-	switch(fissNode.tier){
-		//lith
-		case "Lith":
-			output.push(2);
-			break;
-		//meso
-		case "Meso":
-			output.push(3);
-			break;
-		//neo
-		case "Neo":
-			output.push(4);
-			break;
-		//axi
-		case "Axi":
-			output.push(5);
-			break;
-		default:
-			adm.createDM().then(x=> x.send(fissNode.tier + " Does not have a Teir"));
-			break;
-	}
 	//endurance speed
 	switch(fissNode.missionType){
 		case "Defense":
@@ -477,15 +458,14 @@ function getFissRole(fissNode){
 		case "Excavation":
 		case "Disruption":
 		case "Interception":
-			output.push(6);
+			output.push("Endurance");
 			break;
 		case "Spy":
-		case "Exterminate":
 		case "Extermination":
 		case "Capture":
 		case "Rescue":
 		case "Hive":
-			output.push(7);
+			output.push("Quick");
 			break;
 		case "Mobile Defense":
 		case "Sabotage":
@@ -574,9 +554,9 @@ function WGNews(newsFull){
 						"\nFourm Link: " + newsNode.link);
 				//otherwise just notify the news channel	
 				}else{
-					noteChan.send(getRole(config.botRoleMess[8]) + " " + newsNode.message +
+					noteChan.send(getRole("News") + " " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
-				}			
+				}
 			}
 		}
 		//add the id to the active list so we don't repost any news Items
@@ -630,7 +610,7 @@ function WGNightWave(data){
 			}
 			nightID.push(nightNode.id);
 		}if(nightBool == true){
-			noteChan.send(getRole(config.botRoleMess[11]) + "");
+			noteChan.send(getRole("NightWave") + "");
 			noteChan.send(embed);
 			wGetLog.nightwave = nightID;
 		}
@@ -650,7 +630,7 @@ function WGSortie(data){
 				"\nModifier: " + sortie.variants[i].modifier +
 				"\nDescription: " + sortie.variants[i].modifierDescription);
 		}
-		noteChan.send(getRole(config.botRoleMess[10]) + "");
+		noteChan.send(getRole("Sortie") + "");
 		noteChan.send(embed);
 		wGetLog.sortie = sortie.id;
 	}
@@ -684,11 +664,19 @@ function WGInvasion(data){
 	}
 	//check if there is an embed to print
 	if(invasionBool == true){
-		noteChan.send(getRole(config.botRoleMess[12]) + "");
+		noteChan.send(getRole("Invasion") + "");
 		noteChan.send(embed);
 	}
 	//update the alert list since there is a new alert
 	wGetLog.invasion = invasion.slice();
+}
+
+
+function WGKuva(){
+	//https://10o.io/kuvalog.json
+	//use thelink to get the kuva and arbitrations on a timer
+	//these events sync on the hour soo they can check 5 minutes befor the hour realistically
+	//need to set up a way to have it activate initially for testing purposes.
 }
 
 //end of warGet
@@ -711,7 +699,6 @@ function roleSet(message){
 			+ "React with "	+ getEmoji(emojiGuild,config.otherEmoji[4]) + " to gain or lose the Axi role\n"
 			+ "React with " + getEmoji(emojiGuild,config.otherEmoji[5]) + " to gain or lose the Endurance role\n"
 			+ "React with " + getEmoji(emojiGuild,config.otherEmoji[6]) + " to gain or lose the Quick role\n"
-
 
 			);
 		embed.addField("Other",
@@ -738,17 +725,12 @@ function roleSet(message){
 			});
 	}
 	message.then(async(message) =>{
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[0]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[1]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[2]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[3]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[4]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[5]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[6]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[7]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[8]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[9]));
-		await message.react(getEmoji(emojiGuild,config.otherEmoji[10]));
+
+		for(let i = 0; i < 11; i++)
+		{
+			await message.react(getEmoji(emojiGuild,config.otherEmoji[i]));
+		}
+
 		//console.log(message);
 		config.roleMessage = message.id;
 		file.output(config,config.fileWrite[0]);
@@ -769,3 +751,14 @@ function roleUpdate(mem,num){
 		}
 	})
 }
+
+function loading(){
+
+	bot.user.setActivity("Loading." + load);
+	if(load === "....."){
+		load = "";
+	}else{
+		load += ".";
+	}
+}
+

@@ -30,6 +30,7 @@ class xkcd{
 			//console.log(temp);
 			let desc = temp.slice(temp.indexOf("<description>") + 13,temp.indexOf("</description>"));
 			let item = {
+				id: temp.slice(temp.indexOf("</link>") -5 ,temp.indexOf("</link>")-1),
 				title: temp.slice(temp.indexOf("<title>") + 7,temp.indexOf("</title>")),
 				link:  temp.slice(temp.indexOf("<link>") + 6,temp.indexOf("</link>")),
 				img: desc.slice(desc.indexOf('src="') + 5, desc.indexOf('" title')),
@@ -37,12 +38,9 @@ class xkcd{
 				pubDate: temp.slice(temp.indexOf("<pubDate>") + 9,temp.indexOf("</pubDate>")),
 				guid: temp.slice(temp.indexOf("<guid>") + 6,temp.indexOf("</guid>")),
 			}
-
-
 			items.push(item);
 			posa = data.indexOf("<item>", posb);
 			posb = data.indexOf("</item>", posa);
-
 		}
 		return items;
 	}

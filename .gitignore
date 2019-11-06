@@ -1,5 +1,3 @@
 node_modules
-*.txt
 WGet.json
-weap.json
-package-lock.json
+xkcd.txt
