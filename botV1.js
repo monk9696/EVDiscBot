@@ -10,7 +10,6 @@ const file = new fs();
 
 
 //parse the Warframe Data
-
 //Warframe Warget function parser
 const WorldState = require('warframe-worldstate-parser');
 
@@ -280,6 +279,7 @@ function rss(){
 	const curr = require("./xkcd.json");
 
 	comic.getKCD().then((xk)=>{
+		//console.log(xk);
 		xk.forEach((x)=>{
 			if(curr.xkcd.indexOf(x.id) === -1){
 				let embed = new Discord.RichEmbed();
@@ -469,6 +469,7 @@ function getFissRole(fissNode){
 			break;
 		case "Mobile Defense":
 		case "Sabotage":
+		case "Assault":
 			break;
 		default:
 			adm.createDM().then(x=> x.send(fissNode.missionType + " does not have a applicable mission tag"));
