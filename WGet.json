@@ -1,29 +1,10 @@
 {
-  "news": [
-    "5b918a9757904a1a5421dfd2",
-    "5baa79e957904a11a1480555",
-    "5bc626ec3f8d4aaa21395985",
-    "5bd4edaca38e4aa252759b29",
-    "5be0d52e3f8d4a8b872704a9",
-    "5be4a0ab57904a3a8d176c59",
-    "5be4afa557904a5b585a43ba",
-    "5be4c8013f8d4a5fa974db61",
-    "5be4d959a38e4a8c026e28b0",
-    "5be65dc5a38e4a48e4375998",
-    "5beb1ee5a38e4a2a0b419712",
-    "5beb21c757904a8b0f252225"
-  ],
-  "alert": [
-    "5bebb136b0c0c717e2fbbd9e",
-    "5bebb56dc61b150aa0c784ab",
-    "5bebb9697af61493d2750498"
-  ],
-  "fissure": [
-    "5bebaa6ad3ccd99c540e6263",
-    "5bebb29d73ef2433c18c7e83",
-    "5bebb531ffffdf57d795ecf7",
-    "5bebb531ffffdf57d795ecf8",
-    "5bebb531ffffdf57d795ecf9",
-    "5bebb8b5570945bc091eb5d6"
-  ]
+  "news": [],
+  "fissure": [],
+  "alert": [],
+  "sortie": "",
+  "nightwave":[],
+  "invasion":[],
+  "baro": false,
+  "cetus": true
 }
