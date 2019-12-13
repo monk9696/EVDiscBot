@@ -14,12 +14,9 @@ class xkcd{
 		return fetch("https://xkcd.com/rss.xml")
 		.catch(e=> console.log(e))
 		.then((body) => body.text())
-		.then((data) => {return this.parseXML(data)});
-
-		
+		.then((data) => {return this.parseXML(data)});	
 	}
 	
-
 	parseXML(data){
 		let items = [];
 		let posa = data.indexOf("<item>", 0);
@@ -45,7 +42,5 @@ class xkcd{
 		return items;
 	}
 }
-	
-
 
 module.exports = xkcd;

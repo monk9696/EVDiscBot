@@ -89,7 +89,7 @@ bot.on("ready", () => {
 
 	
 	//set up for the auto role selection
-//	roleMess = roleSet(roleMess);
+	roleMess = roleSet(roleMess);
 	console.log("Setup Complete");
 });
 
@@ -212,6 +212,12 @@ bot.on('message', (message) =>{
 								case getEmoji(emojiGuild,config.otherEmoji[9]) :
 									role = "NightWave";
 									break;
+								case getEmoji(emojiGuild,config.otherEmoji[11]) :
+									role = "Baro";
+									break;
+								case getEmoji(emojiGuild,config.otherEmoji[12]) :
+									role = "Update";
+									break;
 								default:
 							}
 							if(role !== null){
@@ -277,7 +283,7 @@ function rss(){
 	const comic = new xkcd();
 	
 	const curr = require("./xkcd.json");
-
+	let temp = [];
 	comic.getKCD().then((xk)=>{
 		//console.log(xk);
 		xk.forEach((x)=>{
@@ -289,9 +295,9 @@ function rss(){
 				embed.addField("Hover text\n" + x.hover)		
 				adm.createDM().then((dm) => dm.send(embed));
 			}
-			curr.xkcd.push(x.id);
+			temp.push(x.id);
 		})
-		file.output(curr, "xkcd.json");
+		file.output(temp, "xkcd.json");
 		
 
 	});
@@ -522,7 +528,7 @@ function WGBaro(data){
 					" Credits: " + baroInv[i].credits);
 			}
 			embed.push(workEmbed);
-			anonChan.send("@everyone Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
+			anonChan.send(getRole("Baro") + " " + " Heyoo Brother Tenno, \nBaro Ki'tter is Here.");
 			embed.forEach((j)=>{anonChan.send(j)});
 			//console.log(baroInv);
 		
@@ -551,7 +557,7 @@ function WGNews(newsFull){
 			if (newsNode.en){
 				//Identify if it is an Update or Prime Access news to link everyone
 				if(newsNode.update == true || newsNode.primeAccess == true){
-					anonChan.send("@everyone " + newsNode.message +
+					anonChan.send(getRole("Updates") + " " + newsNode.message +
 						"\nFourm Link: " + newsNode.link);
 				//otherwise just notify the news channel	
 				}else{
@@ -707,7 +713,8 @@ function roleSet(message){
 			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[8]) + " to gain or lose the Sortie role\n"
 			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[9]) + " to gain or lose the NightWave role\n"
 			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[10]) + " to gain or lose the News role\n"
-
+			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[11]) + " to gain or lose the Baro role\n"
+			 + "React with " + getEmoji(emojiGuild,config.otherEmoji[12]) + " to gain or lose the Update role\n"
 			);
 
 		permChan.send(embed);
@@ -727,7 +734,7 @@ function roleSet(message){
 	}
 	message.then(async(message) =>{
 
-		for(let i = 0; i < 11; i++)
+		for(let i = 0; i < 13; i++)
 		{
 			await message.react(getEmoji(emojiGuild,config.otherEmoji[i]));
 		}
